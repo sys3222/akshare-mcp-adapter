@@ -85,11 +85,12 @@ GET /api/data-sources
 
 ## 🖥️ Web界面功能
 
-### 三个主要标签页：
+### 四个主要标签页：
 
 1. **File Upload** - 上传策略和数据文件进行回测
 2. **AkShare Data** - 使用AkShare数据源进行回测
 3. **MCP Interface** - 测试MCP数据接口
+4. **Integrated Backtest** - 直接使用AkShare数据接口进行回测，无需手动下载数据
 
 ## 🛠️ 安装和部署
 
@@ -178,7 +179,13 @@ docker run -p 12001:12001 mcp-unified-service
 
 ## 📝 更新日志
 
-### v2.0.0 (最新)
+### v2.1.0 (最新)
+- ✅ 完全集成AkShare数据接口和回测功能
+- ✅ 新增"集成回测"标签页，直接使用AkShare数据进行回测
+- ✅ 优化数据缓存机制，提高回测速度
+- ✅ 支持股票、ETF和指数数据的统一访问
+
+### v2.0.0
 - ✅ 集成MCP协议端点
 - ✅ 统一AkShare数据访问和回测功能
 - ✅ 新增Web界面MCP测试标签页

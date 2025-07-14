@@ -115,6 +115,7 @@
         <div class="tab active" data-tab="file-upload">File Upload</div>
         <div class="tab" data-tab="akshare-data">AkShare Data</div>
         <div class="tab" data-tab="mcp-interface">MCP Interface</div>
+        <div class="tab" data-tab="integrated">Integrated Backtest</div>
     </div>
     
     <form id="backtest-form">
@@ -190,6 +191,41 @@
             <div id="mcp-results" style="margin-top: 20px; display: none;">
                 <h4>接口响应:</h4>
                 <pre id="mcp-response" style="background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto;"></pre>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="integrated-tab">
+            <h3>集成回测 - AkShare数据 + 策略</h3>
+            <p>使用AkShare数据接口直接进行策略回测，无需手动下载数据</p>
+            
+            <div class="form-group">
+                <label for="strategy-file-integrated">策略文件 (Python):</label>
+                <input type="file" id="strategy-file-integrated" name="strategy_file_integrated" accept=".py" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="integrated-interface">数据接口:</label>
+                <select id="integrated-interface" name="integrated_interface">
+                    <option value="">选择接口</option>
+                    <option value="stock_zh_a_hist">股票历史数据 (stock_zh_a_hist)</option>
+                    <option value="fund_etf_hist_em">ETF历史数据 (fund_etf_hist_em)</option>
+                    <option value="index_zh_a_hist">指数历史数据 (index_zh_a_hist)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="integrated-symbol">股票/ETF代码:</label>
+                <input type="text" id="integrated-symbol" name="integrated_symbol" placeholder="例如: 000001, 518880">
+            </div>
+            
+            <div class="form-group">
+                <label for="integrated-start-date">开始日期:</label>
+                <input type="text" id="integrated-start-date" name="integrated_start_date" placeholder="格式: YYYYMMDD, 例如: 20200101">
+            </div>
+            
+            <div class="form-group">
+                <label for="integrated-end-date">结束日期:</label>
+                <input type="text" id="integrated-end-date" name="integrated_end_date" placeholder="格式: YYYYMMDD, 例如: 20241201">
             </div>
         </div>
         
@@ -307,9 +343,17 @@
             const activeTab = document.querySelector('.tab.active').dataset.tab;
             
             // Get strategy file based on active tab
-            const strategyFile = activeTab === 'file-upload' 
-                ? document.getElementById('strategy-file').files[0]
-                : document.getElementById('strategy-file-akshare').files[0];
+            let strategyFile;
+            let endpoint = '/api/backtest';
+            
+            if (activeTab === 'file-upload') {
+                strategyFile = document.getElementById('strategy-file').files[0];
+            } else if (activeTab === 'akshare-data') {
+                strategyFile = document.getElementById('strategy-file-akshare').files[0];
+            } else if (activeTab === 'integrated') {
+                strategyFile = document.getElementById('strategy-file-integrated').files[0];
+                endpoint = '/api/backtest-with-mcp';
+            }
             
             if (!strategyFile) {
                 document.getElementById('error').textContent = 'Please select a strategy file';
@@ -326,13 +370,34 @@
                     return;
                 }
                 formData.append('data_file', dataFile);
-            } else {
+            } else if (activeTab === 'akshare-data') {
                 const dataSource = document.getElementById('data-source').value;
                 if (!dataSource) {
                     document.getElementById('error').textContent = 'Please select a data source';
                     return;
                 }
                 formData.append('data_source', dataSource);
+            } else if (activeTab === 'integrated') {
+                const interface_name = document.getElementById('integrated-interface').value;
+                const symbol = document.getElementById('integrated-symbol').value;
+                const start_date = document.getElementById('integrated-start-date').value;
+                const end_date = document.getElementById('integrated-end-date').value;
+                
+                if (!interface_name || !symbol) {
+                    document.getElementById('error').textContent = '请选择数据接口和输入股票/ETF代码';
+                    return;
+                }
+                
+                formData.append('interface', interface_name);
+                formData.append('symbol', symbol);
+                
+                if (start_date) {
+                    formData.append('start_date', start_date);
+                }
+                
+                if (end_date) {
+                    formData.append('end_date', end_date);
+                }
             }
             
             // Add benchmark if selected
@@ -355,7 +420,7 @@
             submitButton.disabled = true;
             
             try {
-                const response = await fetch('/api/backtest', {
+                const response = await fetch(endpoint, {
                     method: 'POST',
                     body: formData
                 });

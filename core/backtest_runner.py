@@ -11,7 +11,7 @@ from datetime import datetime
 
 from models.schemas import BacktestResult, BacktestMetrics
 from utils.performance_utils import analyze_performance, generate_performance_chart
-from utils.akshare_utils import get_akshare_etf_data, get_index_nav
+from utils.akshare_utils import get_akshare_etf_data, get_index_nav, get_stock_data
 
 class MetricsAnalyzer(bt.Analyzer):
     """Analyzer to collect various trading metrics"""
@@ -193,13 +193,26 @@ def load_data(data_path: str) -> Tuple[bt.feeds.DataBase, str, str]:
     """
     # Check if it's an AkShare symbol
     if data_path.startswith('akshare:'):
-        symbol = data_path.split(':')[1]
+        parts = data_path.split(':')
+        symbol = parts[1]
         # Use default date range if not specified
         start_date = '2020-01-01'
         end_date = datetime.now().strftime('%Y-%m-%d')
         
-        # Get data from AkShare
-        data_feed = get_akshare_etf_data(symbol, start_date, end_date)
+        # Check if date range is specified
+        if len(parts) > 2 and ':' in parts[2]:
+            date_range = parts[2].split(':')
+            if len(date_range) == 2:
+                start_date, end_date = date_range
+        
+        # Determine data type and get data from AkShare
+        if symbol.startswith('5') or symbol.startswith('1'):  # ETF symbols typically start with 5 or 1
+            data_feed = get_akshare_etf_data(symbol, start_date, end_date)
+        elif symbol.startswith('0') or symbol.startswith('3') or symbol.startswith('6'):  # Stock symbols
+            data_feed = get_stock_data(symbol, start_date, end_date)
+        else:  # Default to ETF
+            data_feed = get_akshare_etf_data(symbol, start_date, end_date)
+            
         return data_feed, start_date, end_date
     
     # Load from file
@@ -303,6 +316,22 @@ def get_available_data_sources() -> Dict[str, Dict[str, Any]]:
                 "000905": "中证500",
                 "399001": "深证成指",
                 "399006": "创业板指"
+            }
+        },
+        "akshare_stock": {
+            "name": "AkShare Stock",
+            "description": "Chinese A-share stock data from AkShare",
+            "symbols": {
+                "000001": "平安银行",
+                "600000": "浦发银行",
+                "600036": "招商银行",
+                "601318": "中国平安",
+                "600519": "贵州茅台",
+                "000858": "五粮液",
+                "000333": "美的集团",
+                "600276": "恒瑞医药",
+                "002594": "比亚迪",
+                "300750": "宁德时代"
             }
         }
     }
