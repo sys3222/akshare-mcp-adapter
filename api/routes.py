@@ -1,29 +1,22 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException, Form, Query, Body
-from fastapi.responses import JSONResponse
-import os
-import tempfile
-import importlib.util
-import sys
-import json
-import logging
-import pandas as pd
-import io
-from typing import List, Optional, Dict, Any, Union
+from fastapi import APIRouter, UploadFile, File, Form, Body, HTTPException
+from typing import Optional, Dict
 
-from core.backtest_runner import run_backtest, get_available_data_sources
 from models.schemas import (
-    BacktestResult, DataSourceList, DataSourceInfo,
-    AkShareCodeRequest, AkShareCodeResponse
+    BacktestResult, DataSourceList, AkShareCodeRequest, AkShareCodeResponse
 )
 from core.mcp_protocol import MCPRequest, MCPResponse
-from adaptors.akshare import AKShareAdaptor
-
-logger = logging.getLogger("mcp-unified-service")
-akshare_adaptor = AKShareAdaptor()
+from handlers.backtest_handler import (
+    handle_upload_and_run_backtest,
+    handle_backtest_with_code_only,
+    handle_backtest_with_mcp_data
+)
+from handlers.data_source_handler import handle_get_data_sources
+from handlers.akshare_handler import handle_execute_akshare_code
+from handlers.mcp_handler import handle_mcp_data_request
 
 router = APIRouter()
 
-@router.post("/backtest", response_model=BacktestResult)
+@router.post("/backtest", response_model=BacktestResult, tags=["Backtesting"])
 async def upload_and_run_backtest(
     strategy_file: UploadFile = File(...),
     data_file: Optional[UploadFile] = File(None),
@@ -32,271 +25,30 @@ async def upload_and_run_backtest(
     benchmark_symbol: Optional[str] = Form(None)
 ):
     """
-    Upload strategy and data files, run backtest, and return metrics
-    
-    Args:
-        strategy_file: Python file containing a Backtrader strategy class
-        data_file: CSV file with price data (must have Open, High, Low, Close columns)
-        params: JSON string with strategy parameters (optional)
-        data_source: AkShare data source symbol (e.g., 'akshare:518880') (optional, alternative to data_file)
-        benchmark_symbol: Symbol for benchmark index (e.g., '000300' for CSI 300) (optional)
+    Upload strategy and data files to run a backtest.
+    - Provide either a `data_file` (CSV) or a `data_source` from the available list.
     """
-    try:
-        # Create temporary directory for uploaded files
-        with tempfile.TemporaryDirectory() as temp_dir:
-            # Save strategy file
-            strategy_path = os.path.join(temp_dir, strategy_file.filename)
-            with open(strategy_path, "wb") as f:
-                f.write(await strategy_file.read())
-            
-            # Determine data source
-            if data_file:
-                # Save data file
-                data_path = os.path.join(temp_dir, data_file.filename)
-                with open(data_path, "wb") as f:
-                    f.write(await data_file.read())
-            elif data_source:
-                # Use AkShare data source
-                data_path = data_source
-            else:
-                raise HTTPException(status_code=400, detail="Either data_file or data_source must be provided")
-            
-            # Load strategy module dynamically
-            spec = importlib.util.spec_from_file_location("strategy_module", strategy_path)
-            strategy_module = importlib.util.module_from_spec(spec)
-            sys.modules["strategy_module"] = strategy_module
-            spec.loader.exec_module(strategy_module)
-            
-            # Find the strategy class in the module
-            strategy_class = None
-            for attr_name in dir(strategy_module):
-                attr = getattr(strategy_module, attr_name)
-                if isinstance(attr, type) and "Strategy" in attr.__name__:
-                    strategy_class = attr
-                    break
-            
-            if not strategy_class:
-                raise HTTPException(status_code=400, detail="No strategy class found in uploaded file")
-            
-            # Run backtest
-            result = run_backtest(
-                strategy_class=strategy_class, 
-                data_path=data_path, 
-                params_str=params,
-                benchmark_symbol=benchmark_symbol
-            )
-            
-            return result
-            
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error running backtest: {str(e)}")
+    return await handle_upload_and_run_backtest(
+        strategy_file, data_file, params, data_source, benchmark_symbol
+    )
 
-@router.get("/data-sources", response_model=DataSourceList)
-async def get_data_sources():
-    """Get available data sources"""
-    sources = get_available_data_sources()
-    
-    # Convert to list of DataSourceInfo objects
-    source_list = []
-    for key, source in sources.items():
-        source_list.append(DataSourceInfo(
-            name=source["name"],
-            description=source["description"],
-            symbols=source["symbols"]
-        ))
-    
-    return DataSourceList(sources=source_list)
-
-@router.post("/execute-akshare", response_model=AkShareCodeResponse)
-async def execute_akshare_code(request: AkShareCodeRequest):
-    """
-    Execute AkShare code and return the result
-    
-    Args:
-        request: AkShareCodeRequest containing the code to execute and output format
-    
-    Returns:
-        AkShareCodeResponse containing the result of executing the code
-    
-    Example:
-        ```python
-        # Request body
-        {
-            "code": "import akshare as ak\ndf = ak.stock_zh_a_spot_em()\ndf",
-            "format": "json"
-        }
-        ```
-    """
-    try:
-        # Create a temporary module to execute the code
-        module_name = f"akshare_code_{id(request)}"
-        
-        # Add import for akshare
-        code = f"""
-import akshare as ak
-import pandas as pd
-import numpy as np
-
-# User code
-{request.code}
-"""
-        
-        # Create namespace for execution
-        namespace = {
-            "ak": __import__("akshare"),
-            "pd": pd,
-            "np": __import__("numpy"),
-        }
-        
-        # Execute the code
-        exec(code, namespace)
-        
-        # Find the last variable that could be a DataFrame
-        result_var = None
-        for var_name, var_value in namespace.items():
-            if isinstance(var_value, pd.DataFrame) and var_name not in ["pd", "ak", "np"]:
-                result_var = var_value
-        
-        # If no DataFrame found, look for lists or dicts
-        if result_var is None:
-            for var_name, var_value in namespace.items():
-                if (isinstance(var_value, (list, dict)) and 
-                    var_name not in ["pd", "ak", "np"] and
-                    not var_name.startswith("__")):
-                    result_var = var_value
-        
-        if result_var is None:
-            return AkShareCodeResponse(
-                result="No DataFrame or data structure found in the executed code",
-                format="text",
-                error="No result found"
-            )
-        
-        # Convert result to requested format
-        if request.format.lower() == "json":
-            if isinstance(result_var, pd.DataFrame):
-                # Convert DataFrame to JSON
-                result = json.loads(result_var.to_json(orient="records", date_format="iso"))
-            else:
-                # Convert other types to JSON
-                result = result_var
-            return AkShareCodeResponse(result=result, format="json")
-        
-        elif request.format.lower() == "csv":
-            if isinstance(result_var, pd.DataFrame):
-                # Convert DataFrame to CSV
-                csv_buffer = io.StringIO()
-                result_var.to_csv(csv_buffer, index=False)
-                result = csv_buffer.getvalue()
-            else:
-                # Convert other types to CSV (simple representation)
-                result = str(result_var)
-            return AkShareCodeResponse(result=result, format="csv")
-        
-        elif request.format.lower() == "html":
-            if isinstance(result_var, pd.DataFrame):
-                # Convert DataFrame to HTML
-                result = result_var.to_html(index=False)
-            else:
-                # Convert other types to HTML (simple representation)
-                result = f"<pre>{str(result_var)}</pre>"
-            return AkShareCodeResponse(result=result, format="html")
-        
-        else:
-            return AkShareCodeResponse(
-                result="Unsupported format. Use 'json', 'csv', or 'html'.",
-                format="text",
-                error="Unsupported format"
-            )
-    
-    except Exception as e:
-        logger.error(f"Error executing AkShare code: {str(e)}")
-        return AkShareCodeResponse(
-            result=[],
-            format=request.format,
-            error=f"Error executing AkShare code: {str(e)}"
-        )
-
-@router.post("/backtest-code", response_model=BacktestResult)
+@router.post("/backtest-code", response_model=BacktestResult, tags=["Backtesting"])
 async def backtest_with_code_only(
-    strategy_code: str = Body(...),
-    symbol: str = Body(...),
-    start_date: Optional[str] = Body(None),
-    end_date: Optional[str] = Body(None),
-    params: Optional[dict] = Body(None),
-    benchmark_symbol: Optional[str] = Body(None)
+    strategy_code: str = Body(..., embed=True),
+    symbol: str = Body(..., embed=True),
+    start_date: Optional[str] = Body(None, embed=True),
+    end_date: Optional[str] = Body(None, embed=True),
+    params: Optional[Dict] = Body(None, embed=True),
+    benchmark_symbol: Optional[str] = Body(None, embed=True)
 ):
     """
-    Run backtest using only strategy code, with data from AkShare
-    
-    Args:
-        strategy_code: Python code containing a Backtrader strategy class
-        symbol: Symbol to fetch data for (e.g., '000001')
-        start_date: Start date in 'YYYY-MM-DD' format (optional)
-        end_date: End date in 'YYYY-MM-DD' format (optional)
-        params: Dictionary with strategy parameters (optional)
-        benchmark_symbol: Symbol for benchmark index (e.g., '000300' for CSI 300) (optional)
+    Run a backtest directly from Python code using AkShare for data.
     """
-    try:
-        # Create temporary directory for strategy code
-        with tempfile.TemporaryDirectory() as temp_dir:
-            # Save strategy code to a file
-            strategy_path = os.path.join(temp_dir, "strategy.py")
-            with open(strategy_path, "w") as f:
-                f.write(strategy_code)
-            
-            # Determine data source based on symbol format
-            if symbol.startswith('5') or symbol.startswith('1') or symbol.startswith('159'):
-                # ETF symbols typically start with 5, 1, or 159
-                data_path = f"akshare:{symbol}"
-            elif symbol.startswith('0') or symbol.startswith('3') or symbol.startswith('6'):
-                # Stock symbols
-                data_path = f"akshare:{symbol}"
-            else:
-                # Default to stock data
-                data_path = f"akshare:{symbol}"
-            
-            # Add date range if provided
-            if start_date and end_date:
-                data_path += f":{start_date}:{end_date}"
-            
-            # Load strategy module dynamically
-            spec = importlib.util.spec_from_file_location("strategy_module", strategy_path)
-            strategy_module = importlib.util.module_from_spec(spec)
-            sys.modules["strategy_module"] = strategy_module
-            spec.loader.exec_module(strategy_module)
-            
-            # Find the strategy class in the module
-            strategy_class = None
-            for attr_name in dir(strategy_module):
-                attr = getattr(strategy_module, attr_name)
-                if isinstance(attr, type) and "Strategy" in attr.__name__:
-                    strategy_class = attr
-                    break
-            
-            if not strategy_class:
-                raise HTTPException(status_code=400, detail="No strategy class found in provided code")
-            
-            # Convert params dict to JSON string if provided
-            params_str = None
-            if params:
-                params_str = json.dumps(params)
-            
-            # Run backtest
-            result = run_backtest(
-                strategy_class=strategy_class, 
-                data_path=data_path, 
-                params_str=params_str,
-                benchmark_symbol=benchmark_symbol
-            )
-            
-            return result
-            
-    except Exception as e:
-        logger.error(f"Error running backtest with code: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error running backtest: {str(e)}")
+    return await handle_backtest_with_code_only(
+        strategy_code, symbol, start_date, end_date, params, benchmark_symbol
+    )
 
-@router.post("/backtest-with-mcp", response_model=BacktestResult)
+@router.post("/backtest-with-mcp", response_model=BacktestResult, tags=["Backtesting"])
 async def backtest_with_mcp_data(
     strategy_file: UploadFile = File(...),
     interface: str = Form(...),
@@ -307,113 +59,38 @@ async def backtest_with_mcp_data(
     benchmark_symbol: Optional[str] = Form(None)
 ):
     """
-    Run backtest using data directly from MCP interface
-    
-    Args:
-        strategy_file: Python file containing a Backtrader strategy class
-        interface: AkShare interface name (e.g., 'stock_zh_a_hist')
-        symbol: Symbol to fetch data for (e.g., '000001')
-        start_date: Start date in 'YYYYMMDD' format (optional)
-        end_date: End date in 'YYYYMMDD' format (optional)
-        params: JSON string with strategy parameters (optional)
-        benchmark_symbol: Symbol for benchmark index (e.g., '000300' for CSI 300) (optional)
+    Run a backtest using data fetched directly via an AkShare interface.
     """
-    try:
-        # Create temporary directory for uploaded files
-        with tempfile.TemporaryDirectory() as temp_dir:
-            # Save strategy file
-            strategy_path = os.path.join(temp_dir, strategy_file.filename)
-            with open(strategy_path, "wb") as f:
-                f.write(await strategy_file.read())
-            
-            # Determine data source based on interface
-            if interface == "stock_zh_a_hist":
-                data_path = f"akshare:{symbol}"
-            elif interface == "fund_etf_hist_em":
-                data_path = f"akshare:{symbol}"
-            elif interface == "index_zh_a_hist":
-                data_path = f"akshare:{symbol}"
-            else:
-                # Default to stock data
-                data_path = f"akshare:{symbol}"
-            
-            # Add date range if provided
-            if start_date and end_date:
-                # Convert from YYYYMMDD to YYYY-MM-DD format
-                start_fmt = f"{start_date[:4]}-{start_date[4:6]}-{start_date[6:8]}"
-                end_fmt = f"{end_date[:4]}-{end_date[4:6]}-{end_date[6:8]}"
-                data_path += f":{start_fmt}:{end_fmt}"
-            
-            # Load strategy module dynamically
-            spec = importlib.util.spec_from_file_location("strategy_module", strategy_path)
-            strategy_module = importlib.util.module_from_spec(spec)
-            sys.modules["strategy_module"] = strategy_module
-            spec.loader.exec_module(strategy_module)
-            
-            # Find the strategy class in the module
-            strategy_class = None
-            for attr_name in dir(strategy_module):
-                attr = getattr(strategy_module, attr_name)
-                if isinstance(attr, type) and "Strategy" in attr.__name__:
-                    strategy_class = attr
-                    break
-            
-            if not strategy_class:
-                raise HTTPException(status_code=400, detail="No strategy class found in uploaded file")
-            
-            # Run backtest
-            result = run_backtest(
-                strategy_class=strategy_class, 
-                data_path=data_path, 
-                params_str=params,
-                benchmark_symbol=benchmark_symbol
-            )
-            
-            return result
-            
-    except Exception as e:
-        logger.error(f"Error running backtest with MCP data: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error running backtest: {str(e)}")
+    return await handle_backtest_with_mcp_data(
+        strategy_file, interface, symbol, start_date, end_date, params, benchmark_symbol
+    )
 
-@router.post("/mcp-data")
+@router.get("/data-sources", response_model=DataSourceList, tags=["Data Sources"])
+async def get_data_sources():
+    """
+    Get the list of available AkShare data sources for backtesting.
+    """
+    return handle_get_data_sources()
+
+@router.post("/execute-akshare", response_model=AkShareCodeResponse, tags=["AkShare"])
+async def execute_akshare_code(request: AkShareCodeRequest):
+    """
+    Execute a snippet of AkShare Python code and get the result.
+    - The last variable that is a DataFrame, list, or dict will be returned.
+    """
+    return handle_execute_akshare_code(request)
+
+@router.post("/mcp-data", response_model=MCPResponse, tags=["MCP Protocol"])
 async def get_mcp_data(request: MCPRequest):
     """
-    Get data from AkShare using MCP protocol for use in backtesting
-    
-    This endpoint allows direct access to AkShare data through the MCP protocol,
-    which can then be used for backtesting.
-    """
-    try:
-        logger.info(f"MCP数据请求: {request.interface}, 参数: {request.params}")
-        
-        # 调用AkShare方法
-        result = await akshare_adaptor.call(request.interface, **request.params)
-        
-        # 如果结果是DataFrame，转换为字典格式
-        if hasattr(result, 'to_dict'):
-            result = result.to_dict('records')
-        
-        return MCPResponse(
-            data=result,
-            request_id=request.request_id,
-            status=200
-        )
-    except AttributeError as e:
-        logger.error(f"不支持的接口: {request.interface}, 错误: {str(e)}")
-        raise HTTPException(
-            status_code=400, 
-            detail=f"不支持的接口: {request.interface}"
-        )
-    except Exception as e:
-        logger.error(f"MCP数据请求错误: {str(e)}")
-        return MCPResponse(
-            data=None,
-            request_id=request.request_id,
-            status=500,
-            error=str(e)
-        )
 
-@router.get("/health")
+    Get data from AkShare using the MCP (Microservice Control Protocol).
+    """
+    return await handle_mcp_data_request(request)
+
+@router.get("/health", tags=["System"])
 async def health_check():
-    """Health check endpoint"""
+    """
+    Health check endpoint to verify the service is running.
+    """
     return {"status": "ok"}

@@ -10,6 +10,7 @@ from docs_config import custom_openapi
 from core.mcp_protocol import MCPRequest, MCPResponse
 from adaptors.akshare import AKShareAdaptor
 from utils.akshare_utils import init_akshare_cache
+from handlers.mcp_handler import handle_mcp_data_request
 
 # Configure logging
 logging.basicConfig(
@@ -60,47 +61,6 @@ async def root():
     """Redirect to the main page"""
     return RedirectResponse(url="/static/index.html")
 
-@app.post("/api/mcp", response_model=MCPResponse)
-async def mcp_endpoint(request: MCPRequest):
-    """
-    MCP协议端点 - 提供AkShare数据接口
-    
-    支持的接口包括：
-    - stock_zh_a_hist: 获取A股历史数据
-    - fund_em_open_fund_info: 获取基金信息
-    - index_zh_a_hist: 获取指数历史数据
-    - 等等...
-    """
-    try:
-        logger.info(f"MCP请求: {request.interface}, 参数: {request.params}")
-        
-        # 调用AkShare方法
-        result = await akshare_adaptor.call(request.interface, **request.params)
-        
-        # 如果结果是DataFrame，转换为字典格式
-        if hasattr(result, 'to_dict'):
-            result = result.to_dict('records')
-        
-        return MCPResponse(
-            data=result,
-            request_id=request.request_id,
-            status=200
-        )
-    except AttributeError as e:
-        logger.error(f"不支持的接口: {request.interface}, 错误: {str(e)}")
-        raise HTTPException(
-            status_code=400, 
-            detail=f"不支持的接口: {request.interface}"
-        )
-    except Exception as e:
-        logger.error(f"MCP请求错误: {str(e)}")
-        return MCPResponse(
-            data=None,
-            request_id=request.request_id,
-            status=500,
-            error=str(e)
-        )
-
 @app.get("/api/interfaces")
 async def get_available_interfaces():
     """获取所有可用的AkShare接口列表"""
@@ -131,7 +91,7 @@ async def get_available_interfaces():
             "interfaces": common_interfaces
         }
     except Exception as e:
-        logger.error(f"获取接口列表错误: {str(e)}")
+        logger.error(f"获取接��列表错误: {str(e)}")
         return {
             "status": "error",
             "message": str(e)
