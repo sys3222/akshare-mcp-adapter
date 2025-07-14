@@ -1,47 +1,8 @@
-# Python
 __pycache__/
 *.py[cod]
-*$py.class
-*.so
-.Python
-env/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# Virtual Environment
-venv/
-ENV/
-env/
-
-# IDE
-.idea/
-.vscode/
 *.swp
-*.swo
-
-# Logs
-*.log
-logs/
-
-# Cache directories
-etf_cache/
-index_cache/
-
-# Service files
-*.pid
-
-# OS specific
 .DS_Store
-Thumbs.db
+.env
+
+# 忽略日志文件
+test_server.log
