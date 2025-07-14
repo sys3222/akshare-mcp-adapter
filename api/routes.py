@@ -102,6 +102,85 @@ async def get_data_sources():
     
     return DataSourceList(sources=source_list)
 
+@router.post("/backtest-code", response_model=BacktestResult)
+async def backtest_with_code_only(
+    strategy_code: str = Body(...),
+    symbol: str = Body(...),
+    start_date: Optional[str] = Body(None),
+    end_date: Optional[str] = Body(None),
+    params: Optional[dict] = Body(None),
+    benchmark_symbol: Optional[str] = Body(None)
+):
+    """
+    Run backtest using only strategy code, with data from AkShare
+    
+    Args:
+        strategy_code: Python code containing a Backtrader strategy class
+        symbol: Symbol to fetch data for (e.g., '000001')
+        start_date: Start date in 'YYYY-MM-DD' format (optional)
+        end_date: End date in 'YYYY-MM-DD' format (optional)
+        params: Dictionary with strategy parameters (optional)
+        benchmark_symbol: Symbol for benchmark index (e.g., '000300' for CSI 300) (optional)
+    """
+    try:
+        # Create temporary directory for strategy code
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Save strategy code to a file
+            strategy_path = os.path.join(temp_dir, "strategy.py")
+            with open(strategy_path, "w") as f:
+                f.write(strategy_code)
+            
+            # Determine data source based on symbol format
+            if symbol.startswith('5') or symbol.startswith('1') or symbol.startswith('159'):
+                # ETF symbols typically start with 5, 1, or 159
+                data_path = f"akshare:{symbol}"
+            elif symbol.startswith('0') or symbol.startswith('3') or symbol.startswith('6'):
+                # Stock symbols
+                data_path = f"akshare:{symbol}"
+            else:
+                # Default to stock data
+                data_path = f"akshare:{symbol}"
+            
+            # Add date range if provided
+            if start_date and end_date:
+                data_path += f":{start_date}:{end_date}"
+            
+            # Load strategy module dynamically
+            spec = importlib.util.spec_from_file_location("strategy_module", strategy_path)
+            strategy_module = importlib.util.module_from_spec(spec)
+            sys.modules["strategy_module"] = strategy_module
+            spec.loader.exec_module(strategy_module)
+            
+            # Find the strategy class in the module
+            strategy_class = None
+            for attr_name in dir(strategy_module):
+                attr = getattr(strategy_module, attr_name)
+                if isinstance(attr, type) and "Strategy" in attr.__name__:
+                    strategy_class = attr
+                    break
+            
+            if not strategy_class:
+                raise HTTPException(status_code=400, detail="No strategy class found in provided code")
+            
+            # Convert params dict to JSON string if provided
+            params_str = None
+            if params:
+                params_str = json.dumps(params)
+            
+            # Run backtest
+            result = run_backtest(
+                strategy_class=strategy_class, 
+                data_path=data_path, 
+                params_str=params_str,
+                benchmark_symbol=benchmark_symbol
+            )
+            
+            return result
+            
+    except Exception as e:
+        logger.error(f"Error running backtest with code: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error running backtest: {str(e)}")
+
 @router.post("/backtest-with-mcp", response_model=BacktestResult)
 async def backtest_with_mcp_data(
     strategy_file: UploadFile = File(...),

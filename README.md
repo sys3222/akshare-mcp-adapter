@@ -76,7 +76,28 @@ POST /api/backtest
 
 支持文件上传和AkShare数据源两种方式。
 
-### 3. 数据源接口
+### 3. 代码回测接口
+```bash
+POST /api/backtest-code
+```
+
+只需提供策略代码，数据直接从AkShare获取。
+
+**请求示例**:
+```bash
+curl -X POST http://localhost:12001/api/backtest-code \
+-H "Content-Type: application/json" \
+-d '{
+    "strategy_code": "import backtrader as bt\n\nclass MyStrategy(bt.Strategy):\n    def __init__(self):\n        self.sma = bt.indicators.SimpleMovingAverage(self.data.close, period=20)\n\n    def next(self):\n        if self.data.close[0] > self.sma[0]:\n            self.buy()\n        elif self.data.close[0] < self.sma[0]:\n            self.sell()\n",
+    "symbol": "000001",
+    "start_date": "2023-01-01",
+    "end_date": "2023-12-31",
+    "params": {"cash": 100000},
+    "benchmark_symbol": "000300"
+}'
+```
+
+### 4. 数据源接口
 ```bash
 GET /api/data-sources
 ```
@@ -174,8 +195,33 @@ docker run -p 12001:12001 mcp-unified-service
 ```
 
 ### 示例策略
-- `tests/sample_strategy.py` - 简单移动平均策略
-- `tests/etf_momentum_strategy.py` - ETF动量策略
+- `tests/sample_strategies/simple_ma_strategy.py` - 简单双均线策略
+- `tests/sample_strategies/rsi_strategy.py` - RSI超买超卖策略
+
+#### 简单双均线策略示例
+```python
+import backtrader as bt
+
+class SimpleMAStrategy(bt.Strategy):
+    params = (
+        ('fast_period', 10),  # 快速均线周期
+        ('slow_period', 30),  # 慢速均线周期
+    )
+    
+    def __init__(self):
+        # 添加移动平均线指标
+        self.fast_ma = bt.indicators.SMA(self.datas[0], period=self.params.fast_period)
+        self.slow_ma = bt.indicators.SMA(self.datas[0], period=self.params.slow_period)
+        self.crossover = bt.indicators.CrossOver(self.fast_ma, self.slow_ma)
+        
+    def next(self):
+        if not self.position:  # 没有持仓
+            if self.crossover > 0:  # 快线上穿慢线
+                self.buy()  # 买入
+        else:  # 已有持仓
+            if self.crossover < 0:  # 快线下穿慢线
+                self.sell()  # 卖出
+```
 
 ## 📝 更新日志
 
