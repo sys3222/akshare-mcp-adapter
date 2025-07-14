@@ -114,6 +114,7 @@
     <div class="tabs">
         <div class="tab active" data-tab="file-upload">File Upload</div>
         <div class="tab" data-tab="akshare-data">AkShare Data</div>
+        <div class="tab" data-tab="mcp-interface">MCP Interface</div>
     </div>
     
     <form id="backtest-form">
@@ -149,6 +150,46 @@
                 <select id="data-source" name="data_source">
                     <option value="">Select a symbol</option>
                 </select>
+            </div>
+        </div>
+
+        <div class="tab-content" id="mcp-interface-tab">
+            <h3>MCP接口测试</h3>
+            <p>测试AkShare数据接口，支持股票、基金、指数等数据获取</p>
+            
+            <div class="form-group">
+                <label for="mcp-interface">接口名称:</label>
+                <select id="mcp-interface">
+                    <option value="">选择接口</option>
+                    <option value="stock_zh_a_hist">股票历史数据 (stock_zh_a_hist)</option>
+                    <option value="fund_em_open_fund_info">基金信息 (fund_em_open_fund_info)</option>
+                    <option value="index_zh_a_hist">指数历史数据 (index_zh_a_hist)</option>
+                    <option value="stock_zh_a_spot_em">股票实时数据 (stock_zh_a_spot_em)</option>
+                    <option value="fund_etf_spot_em">ETF实时数据 (fund_etf_spot_em)</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="mcp-params">接口参数 (JSON格式):</label>
+                <textarea id="mcp-params" rows="6" placeholder='示例:
+{
+  "symbol": "000001",
+  "period": "daily",
+  "start_date": "20240101",
+  "end_date": "20241201"
+}'></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="mcp-request-id">请求ID:</label>
+                <input type="text" id="mcp-request-id" value="test001" placeholder="请求标识符">
+            </div>
+            
+            <button type="button" onclick="testMCPInterface()">测试接口</button>
+            
+            <div id="mcp-results" style="margin-top: 20px; display: none;">
+                <h4>接口响应:</h4>
+                <pre id="mcp-response" style="background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto;"></pre>
             </div>
         </div>
         
@@ -381,6 +422,75 @@
             // Display chart
             document.getElementById('chart').src = 'data:image/png;base64,' + result.chart;
         }
+
+        // MCP Interface Testing Function
+        async function testMCPInterface() {
+            const interface_name = document.getElementById('mcp-interface').value;
+            const params_text = document.getElementById('mcp-params').value;
+            const request_id = document.getElementById('mcp-request-id').value;
+            
+            if (!interface_name) {
+                alert('请选择接口名称');
+                return;
+            }
+            
+            let params = {};
+            if (params_text.trim()) {
+                try {
+                    params = JSON.parse(params_text);
+                } catch (e) {
+                    alert('参数格式错误，请输入有效的JSON格式');
+                    return;
+                }
+            }
+            
+            const requestData = {
+                interface: interface_name,
+                params: params,
+                request_id: request_id || 'test001'
+            };
+            
+            try {
+                const response = await fetch('/api/mcp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                
+                const result = await response.json();
+                
+                // Display results
+                document.getElementById('mcp-results').style.display = 'block';
+                document.getElementById('mcp-response').textContent = JSON.stringify(result, null, 2);
+                
+            } catch (error) {
+                document.getElementById('mcp-results').style.display = 'block';
+                document.getElementById('mcp-response').textContent = 'Error: ' + error.message;
+            }
+        }
+
+        // Update interface parameters based on selection
+        document.getElementById('mcp-interface').addEventListener('change', function() {
+            const interface_name = this.value;
+            const paramsTextarea = document.getElementById('mcp-params');
+            
+            // Provide example parameters for different interfaces
+            const examples = {
+                'stock_zh_a_hist': '{\n  "symbol": "000001",\n  "period": "daily",\n  "start_date": "20240101",\n  "end_date": "20241201"\n}',
+                'fund_em_open_fund_info': '{\n  "fund": "000001",\n  "indicator": "单位净值走势"\n}',
+                'index_zh_a_hist': '{\n  "symbol": "000001",\n  "period": "daily",\n  "start_date": "20240101",\n  "end_date": "20241201"\n}',
+                'stock_zh_a_spot_em': '{}',
+                'fund_etf_spot_em': '{}'
+            };
+            
+            if (examples[interface_name]) {
+                paramsTextarea.value = examples[interface_name];
+            } else {
+                paramsTextarea.value = '';
+            }
+        });
     </script>
 </body>
 </html>
