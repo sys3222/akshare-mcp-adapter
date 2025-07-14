@@ -47,8 +47,8 @@ app.add_middleware(
 # Initialize AkShare adaptor
 akshare_adaptor = AKShareAdaptor()
 
-# Initialize AkShare cache for backtesting
-init_akshare_cache()
+# Initialize AkShare cache for backtesting (optional, can be lazy-loaded)
+# init_akshare_cache()
 
 # Include API routes (backtest functionality)
 app.include_router(api_router, prefix="/api")
