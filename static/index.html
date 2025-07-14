@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backtrader MCP Service</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input[type="file"], textarea, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .results {
+            margin-top: 30px;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 4px;
+            display: none;
+        }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .metric-item {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .metric-name {
+            font-weight: bold;
+            color: #555;
+        }
+        .chart-container {
+            margin-top: 20px;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+            background-color: #f9f9f9;
+        }
+        .tab.active {
+            background-color: white;
+            border-bottom: 2px solid white;
+            margin-bottom: -1px;
+            font-weight: bold;
+        }
+        .tab-content {
+            display: none;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 0 4px 4px 4px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .data-source-container {
+            display: none;
+        }
+        .benchmark-container {
+            margin-top: 15px;
+        }
+        .loading {
+            display: inline-block;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Backtrader MCP Service</h1>
+    <p>Upload your strategy and data files to run a backtest</p>
+    
+    <div class="tabs">
+        <div class="tab active" data-tab="file-upload">File Upload</div>
+        <div class="tab" data-tab="akshare-data">AkShare Data</div>
+    </div>
+    
+    <form id="backtest-form">
+        <div class="tab-content active" id="file-upload-tab">
+            <div class="form-group">
+                <label for="strategy-file">Strategy File (Python):</label>
+                <input type="file" id="strategy-file" name="strategy_file" accept=".py" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="data-file">Data File (CSV):</label>
+                <input type="file" id="data-file" name="data_file" accept=".csv" required>
+            </div>
+        </div>
+        
+        <div class="tab-content" id="akshare-data-tab">
+            <div class="form-group">
+                <label for="strategy-file-akshare">Strategy File (Python):</label>
+                <input type="file" id="strategy-file-akshare" name="strategy_file_akshare" accept=".py" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="data-source-type">Data Source Type:</label>
+                <select id="data-source-type">
+                    <option value="">Select a data source type</option>
+                    <option value="akshare_etf">AkShare ETF</option>
+                    <option value="akshare_index">AkShare Index</option>
+                </select>
+            </div>
+            
+            <div class="form-group data-source-container" id="data-source-container">
+                <label for="data-source">Data Symbol:</label>
+                <select id="data-source" name="data_source">
+                    <option value="">Select a symbol</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="form-group benchmark-container">
+            <label for="benchmark-symbol">Benchmark Symbol (optional):</label>
+            <select id="benchmark-symbol" name="benchmark_symbol">
+                <option value="">None</option>
+                <option value="000300">沪深300 (CSI 300)</option>
+                <option value="000001">上证指数 (SSE)</option>
+                <option value="399001">深证成指 (SZSE)</option>
+                <option value="399006">创业板指 (ChiNext)</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="params">Strategy Parameters (JSON, optional):</label>
+            <textarea id="params" name="params" rows="4" placeholder='{"fast_period": 5, "slow_period": 20}'></textarea>
+        </div>
+        
+        <button type="submit">Run Backtest</button>
+    </form>
+    
+    <div id="error" class="error"></div>
+    
+    <div id="results" class="results">
+        <h2>Backtest Results</h2>
+        
+        <div class="metrics" id="metrics-container">
+            <!-- Metrics will be inserted here -->
+        </div>
+        
+        <div class="chart-container">
+            <h3>Performance Chart</h3>
+            <img id="chart" src="" alt="Performance Chart" style="max-width: 100%;">
+        </div>
+    </div>
+    
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Remove active class from all tabs
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked tab
+                this.classList.add('active');
+                document.getElementById(this.dataset.tab + '-tab').classList.add('active');
+            });
+        });
+        
+        // Load data sources
+        async function loadDataSources() {
+            try {
+                const response = await fetch('/api/data-sources');
+                if (!response.ok) {
+                    throw new Error('Failed to load data sources');
+                }
+                
+                const data = await response.json();
+                return data.sources;
+            } catch (error) {
+                console.error('Error loading data sources:', error);
+                return [];
+            }
+        }
+        
+        // Populate data source dropdown based on selected type
+        document.getElementById('data-source-type').addEventListener('change', async function() {
+            const sourceType = this.value;
+            const sourceContainer = document.getElementById('data-source-container');
+            const sourceSelect = document.getElementById('data-source');
+            
+            if (!sourceType) {
+                sourceContainer.style.display = 'none';
+                return;
+            }
+            
+            // Show loading indicator
+            this.insertAdjacentHTML('afterend', '<span class="loading">Loading symbols...</span>');
+            
+            try {
+                const sources = await loadDataSources();
+                const source = sources.find(s => s.name.toLowerCase().replace(/\s+/g, '_') === sourceType);
+                
+                // Remove loading indicator
+                document.querySelector('.loading').remove();
+                
+                if (source) {
+                    // Populate symbols dropdown
+                    sourceSelect.innerHTML = '<option value="">Select a symbol</option>';
+                    Object.entries(source.symbols).forEach(([symbol, description]) => {
+                        const option = document.createElement('option');
+                        option.value = `akshare:${symbol}`;
+                        option.textContent = `${symbol} - ${description}`;
+                        sourceSelect.appendChild(option);
+                    });
+                    
+                    // Show data source container
+                    sourceContainer.style.display = 'block';
+                } else {
+                    sourceContainer.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.querySelector('.loading').remove();
+            }
+        });
+        
+        // Form submission
+        document.getElementById('backtest-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            const activeTab = document.querySelector('.tab.active').dataset.tab;
+            
+            // Get strategy file based on active tab
+            const strategyFile = activeTab === 'file-upload' 
+                ? document.getElementById('strategy-file').files[0]
+                : document.getElementById('strategy-file-akshare').files[0];
+            
+            if (!strategyFile) {
+                document.getElementById('error').textContent = 'Please select a strategy file';
+                return;
+            }
+            
+            formData.append('strategy_file', strategyFile);
+            
+            // Get data source based on active tab
+            if (activeTab === 'file-upload') {
+                const dataFile = document.getElementById('data-file').files[0];
+                if (!dataFile) {
+                    document.getElementById('error').textContent = 'Please select a data file';
+                    return;
+                }
+                formData.append('data_file', dataFile);
+            } else {
+                const dataSource = document.getElementById('data-source').value;
+                if (!dataSource) {
+                    document.getElementById('error').textContent = 'Please select a data source';
+                    return;
+                }
+                formData.append('data_source', dataSource);
+            }
+            
+            // Add benchmark if selected
+            const benchmarkSymbol = document.getElementById('benchmark-symbol').value;
+            if (benchmarkSymbol) {
+                formData.append('benchmark_symbol', benchmarkSymbol);
+            }
+            
+            // Add parameters if provided
+            const params = document.getElementById('params').value;
+            if (params) {
+                formData.append('params', params);
+            }
+            
+            // Show loading state
+            document.getElementById('error').textContent = '';
+            document.getElementById('results').style.display = 'none';
+            const submitButton = this.querySelector('button[type="submit"]');
+            submitButton.textContent = 'Running...';
+            submitButton.disabled = true;
+            
+            try {
+                const response = await fetch('/api/backtest', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Error running backtest');
+                }
+                
+                const result = await response.json();
+                
+                // Display results
+                displayResults(result);
+                
+                // Reset form state
+                submitButton.textContent = 'Run Backtest';
+                submitButton.disabled = false;
+                
+            } catch (error) {
+                document.getElementById('error').textContent = error.message;
+                submitButton.textContent = 'Run Backtest';
+                submitButton.disabled = false;
+            }
+        });
+        
+        function displayResults(result) {
+            // Show results container
+            document.getElementById('results').style.display = 'block';
+            
+            // Display metrics
+            const metricsContainer = document.getElementById('metrics-container');
+            metricsContainer.innerHTML = '';
+            
+            const metrics = result.metrics;
+            const metricItems = [
+                { name: 'Total Return', value: metrics.total_return.toFixed(2) + '%' },
+                { name: 'Annual Return', value: metrics.annual_return.toFixed(2) + '%' },
+                { name: 'Sharpe Ratio', value: metrics.sharpe_ratio.toFixed(2) },
+                { name: 'Sortino Ratio', value: metrics.sortino_ratio.toFixed(2) },
+                { name: 'Max Drawdown', value: metrics.max_drawdown.toFixed(2) + '%' },
+                { name: 'Total Trades', value: metrics.total_trades },
+                { name: 'Win Rate', value: metrics.win_rate.toFixed(2) + '%' },
+                { name: 'Profit Factor', value: metrics.profit_factor.toFixed(2) },
+                { name: 'Avg Trade Duration', value: metrics.avg_trade_duration.toFixed(2) + ' bars' }
+            ];
+            
+            // Add benchmark metrics if available
+            if (metrics.alpha !== null) {
+                metricItems.push({ name: 'Alpha', value: metrics.alpha.toFixed(2) + '%' });
+                metricItems.push({ name: 'Beta', value: metrics.beta.toFixed(2) });
+                metricItems.push({ name: 'Information Ratio', value: metrics.information_ratio.toFixed(2) });
+            }
+            
+            metricItems.forEach(item => {
+                const metricElement = document.createElement('div');
+                metricElement.className = 'metric-item';
+                metricElement.innerHTML = `
+                    <div class="metric-name">${item.name}</div>
+                    <div class="metric-value">${item.value}</div>
+                `;
+                metricsContainer.appendChild(metricElement);
+            });
+            
+            // Display chart
+            document.getElementById('chart').src = 'data:image/png;base64,' + result.chart;
+        }
+    </script>
+</body>
+</html>

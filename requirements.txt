@@ -1,0 +1,9 @@
+fastapi==0.115.13
+uvicorn==0.34.3
+backtrader==1.9.78.123
+pandas
+matplotlib
+python-multipart
+akshare
+statsmodels
+numpy
