@@ -27,6 +27,7 @@
             padding: 8px;
             border: 1px solid #ddd;
             border-radius: 4px;
+            box-sizing: border-box;
         }
         button {
             background-color: #4CAF50;
@@ -48,7 +49,7 @@
         }
         .metrics {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 10px;
             margin-bottom: 20px;
         }
@@ -71,25 +72,27 @@
         .tabs {
             display: flex;
             margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
         }
         .tab {
             padding: 10px 20px;
             cursor: pointer;
-            border: 1px solid #ddd;
+            border: 1px solid transparent;
             border-bottom: none;
-            border-radius: 4px 4px 0 0;
-            background-color: #f9f9f9;
+            margin-bottom: -1px;
         }
         .tab.active {
             background-color: white;
-            border-bottom: 2px solid white;
-            margin-bottom: -1px;
+            border-color: #ddd;
+            border-bottom: 1px solid white;
+            border-radius: 4px 4px 0 0;
             font-weight: bold;
         }
         .tab-content {
             display: none;
             border: 1px solid #ddd;
             padding: 20px;
+            border-top: none;
             border-radius: 0 4px 4px 4px;
         }
         .tab-content.active {
@@ -105,6 +108,30 @@
             display: inline-block;
             margin-left: 10px;
         }
+        .file-preview-container {
+            margin-top: 10px;
+            display: none;
+        }
+        .file-preview-container pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .examples {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .examples ul {
+            padding-left: 20px;
+            margin: 0;
+        }
     </style>
 </head>
 <body>
@@ -112,51 +139,72 @@
     <p>Upload your strategy and data files to run a backtest</p>
     
     <div class="tabs">
-        <div class="tab active" data-tab="file-upload">File Upload</div>
-        <div class="tab" data-tab="akshare-data">AkShare Data</div>
-        <div class="tab" data-tab="mcp-interface">MCP Interface</div>
-        <div class="tab" data-tab="integrated">Integrated Backtest</div>
+        <div class="tab active" data-tab="file-upload">文件上传回测</div>
+        <div class="tab" data-tab="akshare-data">AkShare 数据回测</div>
+        <div class="tab" data-tab="integrated">集成回测</div>
+        <div class="tab" data-tab="mcp-interface">高级接口测试</div>
     </div>
     
     <form id="backtest-form">
         <div class="tab-content active" id="file-upload-tab">
             <div class="form-group">
-                <label for="strategy-file">Strategy File (Python):</label>
+                <label for="strategy-file">策略文件 (Python):</label>
                 <input type="file" id="strategy-file" name="strategy_file" accept=".py" required>
+                <div class="file-preview-container" id="strategy-file-preview-container">
+                    <label>文件预览:</label>
+                    <pre id="strategy-file-preview"></pre>
+                </div>
             </div>
             
             <div class="form-group">
-                <label for="data-file">Data File (CSV):</label>
+                <label for="data-file">数据文件 (CSV):</label>
                 <input type="file" id="data-file" name="data_file" accept=".csv" required>
+                <div class="file-preview-container" id="data-file-preview-container">
+                    <label>文件预览:</label>
+                    <pre id="data-file-preview"></pre>
+                </div>
+            </div>
+
+            <div class="examples">
+                <p>不知道上传什么？查看或下载示例文件：</p>
+                <ul>
+                    <li><a href="/static/examples/simple_ma_strategy_example.py" target="_blank" download>双均线策略示例 (.py)</a></li>
+                    <li><a href="/static/examples/rsi_strategy_example.py" target="_blank" download>RSI 策略示例 (.py)</a></li>
+                    <li><a href="/static/examples/sample_data_example.csv" target="_blank" download>行情数据表示例 (.csv)</a></li>
+                </ul>
             </div>
         </div>
         
         <div class="tab-content" id="akshare-data-tab">
             <div class="form-group">
-                <label for="strategy-file-akshare">Strategy File (Python):</label>
+                <label for="strategy-file-akshare">策略文件 (Python):</label>
                 <input type="file" id="strategy-file-akshare" name="strategy_file_akshare" accept=".py" required>
+                <div class="file-preview-container" id="strategy-file-akshare-preview-container">
+                    <label>文件预览:</label>
+                    <pre id="strategy-file-akshare-preview"></pre>
+                </div>
             </div>
             
             <div class="form-group">
-                <label for="data-source-type">Data Source Type:</label>
+                <label for="data-source-type">数据源类型:</label>
                 <select id="data-source-type">
-                    <option value="">Select a data source type</option>
+                    <option value="">选择数据源类型</option>
                     <option value="akshare_etf">AkShare ETF</option>
-                    <option value="akshare_index">AkShare Index</option>
+                    <option value="akshare_index">AkShare 指数</option>
                 </select>
             </div>
             
             <div class="form-group data-source-container" id="data-source-container">
-                <label for="data-source">Data Symbol:</label>
+                <label for="data-source">数据标识:</label>
                 <select id="data-source" name="data_source">
-                    <option value="">Select a symbol</option>
+                    <option value="">选择一个标识</option>
                 </select>
             </div>
         </div>
 
         <div class="tab-content" id="mcp-interface-tab">
-            <h3>MCP接口测试</h3>
-            <p>测试AkShare数据接口，支持股票、基金、指数等数据获取</p>
+            <h3>高级接口测试</h3>
+            <p>直接调用 AkShare 的原始数据接口，支持股票、基金、指数等。适合开发者或高级用户。</p>
             
             <div class="form-group">
                 <label for="mcp-interface">接口名称:</label>
@@ -201,13 +249,16 @@
             <div class="form-group">
                 <label for="strategy-file-integrated">策略文件 (Python):</label>
                 <input type="file" id="strategy-file-integrated" name="strategy_file_integrated" accept=".py" required>
+                 <div class="file-preview-container" id="strategy-file-integrated-preview-container">
+                    <label>文件预览:</label>
+                    <pre id="strategy-file-integrated-preview"></pre>
+                </div>
             </div>
             
             <div class="form-group">
                 <label for="integrated-interface">数据接口:</label>
                 <select id="integrated-interface" name="integrated_interface">
-                    <option value="">选择接口</option>
-                    <option value="stock_zh_a_hist">股票历史数据 (stock_zh_a_hist)</option>
+                    <option value="stock_zh_a_hist" selected>股票历史数据 (stock_zh_a_hist)</option>
                     <option value="fund_etf_hist_em">ETF历史数据 (fund_etf_hist_em)</option>
                     <option value="index_zh_a_hist">指数历史数据 (index_zh_a_hist)</option>
                 </select>
@@ -215,24 +266,24 @@
             
             <div class="form-group">
                 <label for="integrated-symbol">股票/ETF代码:</label>
-                <input type="text" id="integrated-symbol" name="integrated_symbol" placeholder="例如: 000001, 518880">
+                <input type="text" id="integrated-symbol" name="integrated_symbol" value="000001" placeholder="例如: 000001, 518880">
             </div>
             
             <div class="form-group">
                 <label for="integrated-start-date">开始日期:</label>
-                <input type="text" id="integrated-start-date" name="integrated_start_date" placeholder="格式: YYYYMMDD, 例如: 20200101">
+                <input type="text" id="integrated-start-date" name="integrated_start_date" value="20230101" placeholder="格式: YYYYMMDD, 例如: 20200101">
             </div>
             
             <div class="form-group">
                 <label for="integrated-end-date">结束日期:</label>
-                <input type="text" id="integrated-end-date" name="integrated_end_date" placeholder="格式: YYYYMMDD, 例如: 20241201">
+                <input type="text" id="integrated-end-date" name="integrated_end_date" value="20231231" placeholder="格式: YYYYMMDD, 例如: 20241201">
             </div>
         </div>
         
         <div class="form-group benchmark-container">
-            <label for="benchmark-symbol">Benchmark Symbol (optional):</label>
+            <label for="benchmark-symbol">基准指数 (可选):</label>
             <select id="benchmark-symbol" name="benchmark_symbol">
-                <option value="">None</option>
+                <option value="">无</option>
                 <option value="000300">沪深300 (CSI 300)</option>
                 <option value="000001">上证指数 (SSE)</option>
                 <option value="399001">深证成指 (SZSE)</option>
@@ -241,50 +292,73 @@
         </div>
         
         <div class="form-group">
-            <label for="params">Strategy Parameters (JSON, optional):</label>
-            <textarea id="params" name="params" rows="4" placeholder='{"fast_period": 5, "slow_period": 20}'></textarea>
+            <label for="params">策略参数 (JSON, 可选):</label>
+            <textarea id="params" name="params" rows="4" placeholder='{"fast_period": 10, "slow_period": 30}'></textarea>
         </div>
         
-        <button type="submit">Run Backtest</button>
+        <button type="submit">运行回测</button>
     </form>
     
     <div id="error" class="error"></div>
     
     <div id="results" class="results">
-        <h2>Backtest Results</h2>
+        <h2>回测结果</h2>
         
         <div class="metrics" id="metrics-container">
             <!-- Metrics will be inserted here -->
         </div>
         
         <div class="chart-container">
-            <h3>Performance Chart</h3>
+            <h3>策略表现图</h3>
             <img id="chart" src="" alt="Performance Chart" style="max-width: 100%;">
         </div>
     </div>
     
     <script>
-        // Tab switching
+        // --- File Preview Functionality ---
+        function setupFilePreview(inputId, previewContainerId, previewId) {
+            const input = document.getElementById(inputId);
+            const previewContainer = document.getElementById(previewContainerId);
+            const preview = document.getElementById(previewId);
+
+            if (!input || !previewContainer || !preview) return;
+
+            input.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.textContent = e.target.result;
+                        previewContainer.style.display = 'block';
+                    };
+                    reader.onerror = function() {
+                        preview.textContent = 'Error reading file.';
+                        previewContainer.style.display = 'block';
+                    };
+                    reader.readAsText(file);
+                } else {
+                    preview.textContent = '';
+                    previewContainer.style.display = 'none';
+                }
+            });
+        }
+
+        // --- Tab Switching ---
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', function() {
-                // Remove active class from all tabs
                 document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
                 document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                 
-                // Add active class to clicked tab
                 this.classList.add('active');
                 document.getElementById(this.dataset.tab + '-tab').classList.add('active');
             });
         });
         
-        // Load data sources
+        // --- Load Data Sources ---
         async function loadDataSources() {
             try {
                 const response = await fetch('/api/data-sources');
-                if (!response.ok) {
-                    throw new Error('Failed to load data sources');
-                }
-                
+                if (!response.ok) throw new Error('Failed to load data sources');
                 const data = await response.json();
                 return data.sources;
             } catch (error) {
@@ -293,7 +367,6 @@
             }
         }
         
-        // Populate data source dropdown based on selected type
         document.getElementById('data-source-type').addEventListener('change', async function() {
             const sourceType = this.value;
             const sourceContainer = document.getElementById('data-source-container');
@@ -304,45 +377,41 @@
                 return;
             }
             
-            // Show loading indicator
-            this.insertAdjacentHTML('afterend', '<span class="loading">Loading symbols...</span>');
+            const loadingSpan = this.parentElement.querySelector('.loading') || document.createElement('span');
+            loadingSpan.className = 'loading';
+            loadingSpan.textContent = 'Loading symbols...';
+            this.insertAdjacentElement('afterend', loadingSpan);
             
             try {
                 const sources = await loadDataSources();
                 const source = sources.find(s => s.name.toLowerCase().replace(/\s+/g, '_') === sourceType);
                 
-                // Remove loading indicator
-                document.querySelector('.loading').remove();
-                
                 if (source) {
-                    // Populate symbols dropdown
-                    sourceSelect.innerHTML = '<option value="">Select a symbol</option>';
+                    sourceSelect.innerHTML = '<option value="">选择一个标识</option>';
                     Object.entries(source.symbols).forEach(([symbol, description]) => {
                         const option = document.createElement('option');
                         option.value = `akshare:${symbol}`;
                         option.textContent = `${symbol} - ${description}`;
                         sourceSelect.appendChild(option);
                     });
-                    
-                    // Show data source container
                     sourceContainer.style.display = 'block';
                 } else {
                     sourceContainer.style.display = 'none';
                 }
             } catch (error) {
                 console.error('Error:', error);
-                document.querySelector('.loading').remove();
+            } finally {
+                loadingSpan.remove();
             }
         });
         
-        // Form submission
+        // --- Form Submission ---
         document.getElementById('backtest-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const formData = new FormData();
             const activeTab = document.querySelector('.tab.active').dataset.tab;
             
-            // Get strategy file based on active tab
             let strategyFile;
             let endpoint = '/api/backtest';
             
@@ -356,24 +425,23 @@
             }
             
             if (!strategyFile) {
-                document.getElementById('error').textContent = 'Please select a strategy file';
+                document.getElementById('error').textContent = '请选择一个策略文件';
                 return;
             }
             
             formData.append('strategy_file', strategyFile);
             
-            // Get data source based on active tab
             if (activeTab === 'file-upload') {
                 const dataFile = document.getElementById('data-file').files[0];
                 if (!dataFile) {
-                    document.getElementById('error').textContent = 'Please select a data file';
+                    document.getElementById('error').textContent = '请选择一个数据文件';
                     return;
                 }
                 formData.append('data_file', dataFile);
             } else if (activeTab === 'akshare-data') {
                 const dataSource = document.getElementById('data-source').value;
                 if (!dataSource) {
-                    document.getElementById('error').textContent = 'Please select a data source';
+                    document.getElementById('error').textContent = '请选择一个数据源';
                     return;
                 }
                 formData.append('data_source', dataSource);
@@ -384,111 +452,82 @@
                 const end_date = document.getElementById('integrated-end-date').value;
                 
                 if (!interface_name || !symbol) {
-                    document.getElementById('error').textContent = '请选择数据接口和输入股票/ETF代码';
+                    document.getElementById('error').textContent = '请选择数据接口并输入代码';
                     return;
                 }
                 
                 formData.append('interface', interface_name);
                 formData.append('symbol', symbol);
-                
-                if (start_date) {
-                    formData.append('start_date', start_date);
-                }
-                
-                if (end_date) {
-                    formData.append('end_date', end_date);
-                }
+                if (start_date) formData.append('start_date', start_date);
+                if (end_date) formData.append('end_date', end_date);
             }
             
-            // Add benchmark if selected
             const benchmarkSymbol = document.getElementById('benchmark-symbol').value;
-            if (benchmarkSymbol) {
-                formData.append('benchmark_symbol', benchmarkSymbol);
-            }
+            if (benchmarkSymbol) formData.append('benchmark_symbol', benchmarkSymbol);
             
-            // Add parameters if provided
             const params = document.getElementById('params').value;
-            if (params) {
-                formData.append('params', params);
-            }
+            if (params) formData.append('params', params);
             
-            // Show loading state
-            document.getElementById('error').textContent = '';
-            document.getElementById('results').style.display = 'none';
+            const errorDiv = document.getElementById('error');
+            const resultsDiv = document.getElementById('results');
             const submitButton = this.querySelector('button[type="submit"]');
-            submitButton.textContent = 'Running...';
+            
+            errorDiv.textContent = '';
+            resultsDiv.style.display = 'none';
+            submitButton.textContent = '运行中...';
             submitButton.disabled = true;
             
             try {
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    body: formData
-                });
-                
+                const response = await fetch(endpoint, { method: 'POST', body: formData });
                 if (!response.ok) {
                     const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Error running backtest');
+                    throw new Error(errorData.detail || '运行回测时发生错误');
                 }
-                
                 const result = await response.json();
-                
-                // Display results
                 displayResults(result);
-                
-                // Reset form state
-                submitButton.textContent = 'Run Backtest';
-                submitButton.disabled = false;
-                
             } catch (error) {
-                document.getElementById('error').textContent = error.message;
-                submitButton.textContent = 'Run Backtest';
+                errorDiv.textContent = error.message;
+            } finally {
+                submitButton.textContent = '运行回测';
                 submitButton.disabled = false;
             }
         });
         
         function displayResults(result) {
-            // Show results container
             document.getElementById('results').style.display = 'block';
-            
-            // Display metrics
             const metricsContainer = document.getElementById('metrics-container');
             metricsContainer.innerHTML = '';
             
             const metrics = result.metrics;
             const metricItems = [
-                { name: 'Total Return', value: metrics.total_return.toFixed(2) + '%' },
-                { name: 'Annual Return', value: metrics.annual_return.toFixed(2) + '%' },
-                { name: 'Sharpe Ratio', value: metrics.sharpe_ratio.toFixed(2) },
-                { name: 'Sortino Ratio', value: metrics.sortino_ratio.toFixed(2) },
-                { name: 'Max Drawdown', value: metrics.max_drawdown.toFixed(2) + '%' },
-                { name: 'Total Trades', value: metrics.total_trades },
-                { name: 'Win Rate', value: metrics.win_rate.toFixed(2) + '%' },
-                { name: 'Profit Factor', value: metrics.profit_factor.toFixed(2) },
-                { name: 'Avg Trade Duration', value: metrics.avg_trade_duration.toFixed(2) + ' bars' }
+                { name: '总回报率', value: (metrics.total_return * 100).toFixed(2) + '%' },
+                { name: '年化回报率', value: (metrics.annual_return * 100).toFixed(2) + '%' },
+                { name: '夏普比率', value: metrics.sharpe_ratio.toFixed(2) },
+                { name: '索提诺比率', value: metrics.sortino_ratio.toFixed(2) },
+                { name: '最大回撤', value: (metrics.max_drawdown * 100).toFixed(2) + '%' },
+                { name: '总交易次数', value: metrics.total_trades },
+                { name: '胜率', value: (metrics.win_rate).toFixed(2) + '%' },
+                { name: '盈亏比', value: metrics.profit_factor.toFixed(2) },
+                { name: '平均持仓周期', value: metrics.avg_trade_duration.toFixed(2) + ' 周期' }
             ];
             
-            // Add benchmark metrics if available
-            if (metrics.alpha !== null) {
-                metricItems.push({ name: 'Alpha', value: metrics.alpha.toFixed(2) + '%' });
-                metricItems.push({ name: 'Beta', value: metrics.beta.toFixed(2) });
-                metricItems.push({ name: 'Information Ratio', value: metrics.information_ratio.toFixed(2) });
+            if (metrics.alpha !== null && metrics.alpha !== undefined) {
+                metricItems.push({ name: 'Alpha', value: metrics.alpha.toFixed(3) });
+                metricItems.push({ name: 'Beta', value: metrics.beta.toFixed(3) });
+                metricItems.push({ name: '信息比率', value: metrics.information_ratio.toFixed(3) });
             }
             
             metricItems.forEach(item => {
                 const metricElement = document.createElement('div');
                 metricElement.className = 'metric-item';
-                metricElement.innerHTML = `
-                    <div class="metric-name">${item.name}</div>
-                    <div class="metric-value">${item.value}</div>
-                `;
+                metricElement.innerHTML = `<div class="metric-name">${item.name}</div><div class="metric-value">${item.value}</div>`;
                 metricsContainer.appendChild(metricElement);
             });
             
-            // Display chart
             document.getElementById('chart').src = 'data:image/png;base64,' + result.chart;
         }
 
-        // MCP Interface Testing Function
+        // --- MCP Interface Testing ---
         async function testMCPInterface() {
             const interface_name = document.getElementById('mcp-interface').value;
             const params_text = document.getElementById('mcp-params').value;
@@ -509,39 +548,28 @@
                 }
             }
             
-            const requestData = {
-                interface: interface_name,
-                params: params,
-                request_id: request_id || 'test001'
-            };
-            
+            const requestData = { interface: interface_name, params: params, request_id: request_id || 'test001' };
+            const mcpResultsDiv = document.getElementById('mcp-results');
+            const mcpResponsePre = document.getElementById('mcp-response');
+
             try {
-                const response = await fetch('/api/mcp', {
+                const response = await fetch('/api/mcp-data', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(requestData)
                 });
-                
                 const result = await response.json();
-                
-                // Display results
-                document.getElementById('mcp-results').style.display = 'block';
-                document.getElementById('mcp-response').textContent = JSON.stringify(result, null, 2);
-                
+                mcpResponsePre.textContent = JSON.stringify(result, null, 2);
             } catch (error) {
-                document.getElementById('mcp-results').style.display = 'block';
-                document.getElementById('mcp-response').textContent = 'Error: ' + error.message;
+                mcpResponsePre.textContent = 'Error: ' + error.message;
+            } finally {
+                mcpResultsDiv.style.display = 'block';
             }
         }
 
-        // Update interface parameters based on selection
         document.getElementById('mcp-interface').addEventListener('change', function() {
             const interface_name = this.value;
             const paramsTextarea = document.getElementById('mcp-params');
-            
-            // Provide example parameters for different interfaces
             const examples = {
                 'stock_zh_a_hist': '{\n  "symbol": "000001",\n  "period": "daily",\n  "start_date": "20240101",\n  "end_date": "20241201"\n}',
                 'fund_em_open_fund_info': '{\n  "fund": "000001",\n  "indicator": "单位净值走势"\n}',
@@ -549,12 +577,15 @@
                 'stock_zh_a_spot_em': '{}',
                 'fund_etf_spot_em': '{}'
             };
-            
-            if (examples[interface_name]) {
-                paramsTextarea.value = examples[interface_name];
-            } else {
-                paramsTextarea.value = '';
-            }
+            paramsTextarea.value = examples[interface_name] || '';
+        });
+
+        // --- Initialize Previews and other dynamic content ---
+        document.addEventListener('DOMContentLoaded', function() {
+            setupFilePreview('strategy-file', 'strategy-file-preview-container', 'strategy-file-preview');
+            setupFilePreview('data-file', 'data-file-preview-container', 'data-file-preview');
+            setupFilePreview('strategy-file-akshare', 'strategy-file-akshare-preview-container', 'strategy-file-akshare-preview');
+            setupFilePreview('strategy-file-integrated', 'strategy-file-integrated-preview-container', 'strategy-file-integrated-preview');
         });
     </script>
 </body>
