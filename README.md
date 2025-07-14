@@ -38,15 +38,17 @@ python main.py
 
 ## 📖 API接口
 
+所有API端点都以 `/api` 为前缀。
+
 ### 1. MCP数据接口
 ```bash
-POST /api/mcp
+POST /api/mcp-data
 ```
 
 **请求示例**:
 ```bash
 # 获取股票历史数据
-curl -X POST http://localhost:12001/api/mcp \
+curl -X POST http://localhost:12001/api/mcp-data \
 -H "Content-Type: application/json" \
 -d '{
     "interface": "stock_zh_a_hist",
@@ -60,7 +62,7 @@ curl -X POST http://localhost:12001/api/mcp \
 }'
 
 # 获取基金信息
-curl -X POST http://localhost:12001/api/mcp \
+curl -X POST http://localhost:12001/api/mcp-data \
 -H "Content-Type: application/json" \
 -d '{
     "interface": "fund_em_open_fund_info",
@@ -236,15 +238,29 @@ docker run -p 12001:12001 mcp-unified-service
 
 ### 项目结构
 ```
-├── api/                  # API路由
-├── core/                 # 核心功能
-├── models/               # 数据模型
-├── static/               # Web界面
-├── tests/                # 测试和示例
+├── api/                  # API路由 (FastAPI)
+├── handlers/             # 业务逻辑处理器
+├── core/                 # 核心功能 (回测引擎、MCP协议)
+├── models/               # 数据模型 (Pydantic)
+├── static/               # Web界面 (HTML/JS/CSS)
+├── tests/                # 单元测试和集成测试
+│   ├── unit/             # 单元测试
+│   └── sample_strategies/ # 示例策略
 ├── utils/                # 工具函数
-├── adaptors/             # MCP适配器
+├── adaptors/             # 数据源适配器 (AkShare)
 ├── main.py               # 服务入口
 └── requirements.txt      # 依赖包
+```
+
+### 运行测试
+项目包含一套完整的单元测试和集成测试，使用 `pytest` 框架。
+
+```bash
+# 1. 安装测试依赖
+pip install pytest pytest-asyncio
+
+# 2. 运行测试
+pytest tests/
 ```
 
 ### 示例策略
