@@ -1,4 +1,4 @@
-# MCP 统一服务 - AkShare数据 + 量化回测
+# MCP 统一服务 - AkShare数据 + 量化回测 v2.2.0
 
 一个统一的MCP (Microservice Control Protocol) 服务，提供两大核心功能：
 1. **AkShare数据接口** - 通过标准化MCP协议访问中国金融市场数据
@@ -97,7 +97,60 @@ curl -X POST http://localhost:12001/api/backtest-code \
 }'
 ```
 
-### 4. 数据源接口
+### 4. AkShare代码执行接口
+```bash
+POST /api/execute-akshare
+```
+
+直接提交AkShare代码片段，执行并返回结果。支持多种输出格式：JSON、CSV和HTML。
+
+**请求示例**:
+```bash
+curl -X POST http://localhost:12001/api/execute-akshare \
+-H "Content-Type: application/json" \
+-d '{
+    "code": "import akshare as ak\nstock_sz_a_spot_em_df = ak.stock_sz_a_spot_em()\nstock_sz_a_spot_em_df",
+    "format": "json"
+}'
+```
+
+**响应示例**:
+```json
+{
+  "result": [
+    {
+      "序号": 1,
+      "代码": "000001",
+      "名称": "平安银行",
+      "最新价": 8.12,
+      "涨跌幅": 0.87,
+      "涨跌额": 0.07,
+      "成交量": 31218700,
+      "成交额": 252274920.0,
+      "振幅": 1.24,
+      "最高": 8.19,
+      "最低": 8.09,
+      "今开": 8.12,
+      "昨收": 8.05,
+      "量比": 0.79,
+      "换手率": 0.16,
+      "市盈率-动态": 4.65,
+      "市净率": 0.69,
+      "总市值": 157553376000.0,
+      "流通市值": 157553376000.0,
+      "涨速": 0.0,
+      "5分钟涨跌": 0.0,
+      "60日涨跌幅": -9.78,
+      "年初至今涨跌幅": -5.36
+    },
+    ...
+  ],
+  "format": "json",
+  "error": null
+}
+```
+
+### 5. 数据源接口
 ```bash
 GET /api/data-sources
 ```
@@ -225,7 +278,13 @@ class SimpleMAStrategy(bt.Strategy):
 
 ## 📝 更新日志
 
-### v2.1.0 (最新)
+### v2.2.0 (最新)
+- ✅ 新增AkShare代码执行接口，支持直接提交代码片段获取数据
+- ✅ 新增代码回测接口，只需提供策略代码即可使用AkShare数据进行回测
+- ✅ 添加示例策略文件，包括双均线策略和RSI策略
+- ✅ 优化数据处理逻辑，支持更多数据格式输出（JSON、CSV、HTML）
+
+### v2.1.0
 - ✅ 完全集成AkShare数据接口和回测功能
 - ✅ 新增"集成回测"标签页，直接使用AkShare数据进行回测
 - ✅ 优化数据缓存机制，提高回测速度

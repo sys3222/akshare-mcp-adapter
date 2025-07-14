@@ -1,5 +1,16 @@
 from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Union
+
+class AkShareCodeRequest(BaseModel):
+    """Request to execute AkShare code"""
+    code: str = Field(..., description="AkShare code to execute")
+    format: str = Field("json", description="Output format (json, csv, html)")
+
+class AkShareCodeResponse(BaseModel):
+    """Response from executing AkShare code"""
+    result: Union[List[Dict[str, Any]], str] = Field(..., description="Result of executing the code")
+    format: str = Field(..., description="Format of the result (json, csv, html)")
+    error: Optional[str] = Field(None, description="Error message if execution failed")
 
 class BacktestMetrics(BaseModel):
     """Metrics from a backtest run"""

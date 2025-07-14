@@ -6,10 +6,15 @@ import importlib.util
 import sys
 import json
 import logging
-from typing import List, Optional, Dict, Any
+import pandas as pd
+import io
+from typing import List, Optional, Dict, Any, Union
 
 from core.backtest_runner import run_backtest, get_available_data_sources
-from models.schemas import BacktestResult, DataSourceList, DataSourceInfo
+from models.schemas import (
+    BacktestResult, DataSourceList, DataSourceInfo,
+    AkShareCodeRequest, AkShareCodeResponse
+)
 from core.mcp_protocol import MCPRequest, MCPResponse
 from adaptors.akshare import AKShareAdaptor
 
@@ -101,6 +106,116 @@ async def get_data_sources():
         ))
     
     return DataSourceList(sources=source_list)
+
+@router.post("/execute-akshare", response_model=AkShareCodeResponse)
+async def execute_akshare_code(request: AkShareCodeRequest):
+    """
+    Execute AkShare code and return the result
+    
+    Args:
+        request: AkShareCodeRequest containing the code to execute and output format
+    
+    Returns:
+        AkShareCodeResponse containing the result of executing the code
+    
+    Example:
+        ```python
+        # Request body
+        {
+            "code": "import akshare as ak\ndf = ak.stock_zh_a_spot_em()\ndf",
+            "format": "json"
+        }
+        ```
+    """
+    try:
+        # Create a temporary module to execute the code
+        module_name = f"akshare_code_{id(request)}"
+        
+        # Add import for akshare
+        code = f"""
+import akshare as ak
+import pandas as pd
+import numpy as np
+
+# User code
+{request.code}
+"""
+        
+        # Create namespace for execution
+        namespace = {
+            "ak": __import__("akshare"),
+            "pd": pd,
+            "np": __import__("numpy"),
+        }
+        
+        # Execute the code
+        exec(code, namespace)
+        
+        # Find the last variable that could be a DataFrame
+        result_var = None
+        for var_name, var_value in namespace.items():
+            if isinstance(var_value, pd.DataFrame) and var_name not in ["pd", "ak", "np"]:
+                result_var = var_value
+        
+        # If no DataFrame found, look for lists or dicts
+        if result_var is None:
+            for var_name, var_value in namespace.items():
+                if (isinstance(var_value, (list, dict)) and 
+                    var_name not in ["pd", "ak", "np"] and
+                    not var_name.startswith("__")):
+                    result_var = var_value
+        
+        if result_var is None:
+            return AkShareCodeResponse(
+                result="No DataFrame or data structure found in the executed code",
+                format="text",
+                error="No result found"
+            )
+        
+        # Convert result to requested format
+        if request.format.lower() == "json":
+            if isinstance(result_var, pd.DataFrame):
+                # Convert DataFrame to JSON
+                result = json.loads(result_var.to_json(orient="records", date_format="iso"))
+            else:
+                # Convert other types to JSON
+                result = result_var
+            return AkShareCodeResponse(result=result, format="json")
+        
+        elif request.format.lower() == "csv":
+            if isinstance(result_var, pd.DataFrame):
+                # Convert DataFrame to CSV
+                csv_buffer = io.StringIO()
+                result_var.to_csv(csv_buffer, index=False)
+                result = csv_buffer.getvalue()
+            else:
+                # Convert other types to CSV (simple representation)
+                result = str(result_var)
+            return AkShareCodeResponse(result=result, format="csv")
+        
+        elif request.format.lower() == "html":
+            if isinstance(result_var, pd.DataFrame):
+                # Convert DataFrame to HTML
+                result = result_var.to_html(index=False)
+            else:
+                # Convert other types to HTML (simple representation)
+                result = f"<pre>{str(result_var)}</pre>"
+            return AkShareCodeResponse(result=result, format="html")
+        
+        else:
+            return AkShareCodeResponse(
+                result="Unsupported format. Use 'json', 'csv', or 'html'.",
+                format="text",
+                error="Unsupported format"
+            )
+    
+    except Exception as e:
+        logger.error(f"Error executing AkShare code: {str(e)}")
+        return AkShareCodeResponse(
+            result=[],
+            format=request.format,
+            error=f"Error executing AkShare code: {str(e)}"
+        )
 
 @router.post("/backtest-code", response_model=BacktestResult)
 async def backtest_with_code_only(
