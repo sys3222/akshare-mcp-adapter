@@ -1,0 +1,75 @@
+ERROR:    [Errno 98] Address already in use
+2025-07-14 14:11:32,425 - mcp-unified-service - INFO - 初始化AkShare缓存目录
+2025-07-14 14:11:32,425 - mcp-unified-service - INFO - 预加载沪深300指数数据: 2020-01-01 ~ 2025-07-14
+2025-07-14 14:12:27,319 - mcp-unified-service - INFO - 沪深300指数数据加载完成
+2025-07-14 14:12:27,334 - mcp-unified-service - INFO - 启动MCP统一服务 - AkShare数据 + 量化回测
+2025-07-14 14:12:31,195 - mcp-unified-service - INFO - 初始化AkShare缓存目录
+2025-07-14 14:12:31,196 - mcp-unified-service - INFO - 预加载沪深300指数数据: 2020-01-01 ~ 2025-07-14
+2025-07-14 14:13:07,176 - mcp-unified-service - INFO - 沪深300指数数据加载完成
+2025-07-14 14:13:07,220 - mcp-unified-service - INFO - 初始化AkShare缓存目录
+2025-07-14 14:13:07,220 - mcp-unified-service - INFO - 预加载沪深300指数数据: 2020-01-01 ~ 2025-07-14
+2025-07-14 14:13:08,936 - mcp-unified-service - INFO - 沪深300指数数据加载完成
+2025-07-14 14:23:52,509 - mcp-unified-service - INFO - 初始化AkShare缓存目录
+2025-07-14 14:23:52,509 - mcp-unified-service - INFO - 预加载沪深300指数数据: 2020-01-01 ~ 2025-07-14
+2025-07-14 14:24:35,246 - mcp-unified-service - INFO - 沪深300指数数据加载完成
+2025-07-14 14:24:35,293 - mcp-unified-service - INFO - 初始化AkShare缓存目录
+2025-07-14 14:24:35,294 - mcp-unified-service - INFO - 预加载沪深300指数数据: 2020-01-01 ~ 2025-07-14
+2025-07-14 14:24:37,222 - mcp-unified-service - INFO - 沪深300指数数据加载完成
+2025-07-14 14:26:09,932 - mcp-unified-service - INFO - 初始化AkShare缓存目录
+2025-07-14 14:26:09,932 - mcp-unified-service - INFO - 预加载沪深300指数数据: 2020-01-01 ~ 2025-07-14
+2025-07-14 14:26:49,230 - mcp-unified-service - INFO - 沪深300指数数据加载完成
+2025-07-14 14:26:49,265 - mcp-unified-service - INFO - 初始化AkShare缓存目录
+2025-07-14 14:26:49,265 - mcp-unified-service - INFO - 预加载沪深300指数数据: 2020-01-01 ~ 2025-07-14
+2025-07-14 14:26:50,876 - mcp-unified-service - INFO - 沪深300指数数据加载完成
+2025-07-14 14:29:12,238 - mcp-unified-service - INFO - 初始化AkShare缓存目录
+2025-07-14 14:29:12,238 - mcp-unified-service - INFO - 预加载沪深300指数数据: 2020-01-01 ~ 2025-07-14
+2025-07-14 14:29:21,011 - mcp-unified-service - INFO - 初始化AkShare缓存目录
+2025-07-14 14:29:21,011 - mcp-unified-service - INFO - 预加载沪深300指数数据: 2020-01-01 ~ 2025-07-14
+2025-07-14 14:29:39,769 - mcp-unified-service - INFO - 初始化AkShare缓存目录
+2025-07-14 14:29:39,769 - mcp-unified-service - INFO - 预加载沪深300指数数据: 2020-01-01 ~ 2025-07-14
+2025-07-14 14:29:46,123 - mcp-unified-service - INFO - 初始化AkShare缓存目录
+2025-07-14 14:29:46,123 - mcp-unified-service - INFO - 预加载沪深300指数数据: 2020-01-01 ~ 2025-07-14
+2025-07-14 14:30:22,882 - mcp-unified-service - INFO - 沪深300指数数据加载完成
+2025-07-14 14:30:22,919 - mcp-unified-service - INFO - 初始化AkShare缓存目录
+2025-07-14 14:30:22,919 - mcp-unified-service - INFO - 预加载沪深300指数数据: 2020-01-01 ~ 2025-07-14
+2025-07-14 14:30:25,077 - mcp-unified-service - INFO - 沪深300指数数据加载完成
+2025-07-14 14:31:04,509 - mcp-unified-service - INFO - 初始化AkShare缓存目录
+2025-07-14 14:31:04,510 - mcp-unified-service - INFO - 预加载沪深300指数数据: 2020-01-01 ~ 2025-07-14
+2025-07-14 14:31:09,256 - mcp-unified-service - INFO - 初始化AkShare缓存目录
+2025-07-14 14:31:09,256 - mcp-unified-service - INFO - 预加载沪深300指数数据: 2020-01-01 ~ 2025-07-14
+2025-07-14 14:31:23,671 - mcp-unified-service - INFO - 初始化AkShare缓存目录
+2025-07-14 14:31:23,671 - mcp-unified-service - INFO - 预加载沪深300指数数据: 2020-01-01 ~ 2025-07-14
+2025-07-14 14:32:07,077 - mcp-unified-service - INFO - 沪深300指数数据加载完成
+2025-07-14 14:32:07,116 - mcp-unified-service - INFO - 初始化AkShare缓存目录
+2025-07-14 14:32:07,116 - mcp-unified-service - INFO - 预加载沪深300指数数据: 2020-01-01 ~ 2025-07-14
+2025-07-14 14:32:10,046 - mcp-unified-service - INFO - 沪深300指数数据加载完成
+2025-07-14 14:32:30,345 - mcp-unified-service - INFO - 初始化AkShare缓存目录
+2025-07-14 14:32:30,346 - mcp-unified-service - INFO - 预加载沪深300指数数据: 2020-01-01 ~ 2025-07-14
+2025-07-14 14:32:47,970 - mcp-unified-service - INFO - 初始化AkShare缓存目录
+2025-07-14 14:32:47,971 - mcp-unified-service - INFO - 预加载沪深300指数数据: 2020-01-01 ~ 2025-07-14
+2025-07-14 14:32:52,556 - mcp-unified-service - INFO - 初始化AkShare缓存目录
+2025-07-14 14:32:52,556 - mcp-unified-service - INFO - 预加载沪深300指数数据: 2020-01-01 ~ 2025-07-14
+2025-07-14 14:32:59,280 - mcp-unified-service - INFO - 初始化AkShare缓存目录
+2025-07-14 14:32:59,280 - mcp-unified-service - INFO - 预加载沪深300指数数据: 2020-01-01 ~ 2025-07-14
+2025-07-14 14:33:34,735 - mcp-unified-service - INFO - 沪深300指数数据加载完成
+2025-07-14 14:33:34,770 - mcp-unified-service - INFO - 初始化AkShare缓存目录
+2025-07-14 14:33:34,770 - mcp-unified-service - INFO - 预加载沪深300指数数据: 2020-01-01 ~ 2025-07-14
+2025-07-14 14:33:38,883 - mcp-unified-service - INFO - 沪深300指数数据加载完成
+2025-07-14 14:33:54,225 - mcp-unified-service - INFO - 初始化AkShare缓存目录
+2025-07-14 14:33:54,226 - mcp-unified-service - INFO - 预加载沪深300指数数据: 2020-01-01 ~ 2025-07-14
+2025-07-14 14:33:58,695 - mcp-unified-service - INFO - 初始化AkShare缓存目录
+2025-07-14 14:33:58,695 - mcp-unified-service - INFO - 预加载沪深300指数数据: 2020-01-01 ~ 2025-07-14
+2025-07-14 14:34:02,697 - mcp-unified-service - INFO - 初始化AkShare缓存目录
+2025-07-14 14:34:02,698 - mcp-unified-service - INFO - 预加载沪深300指数数据: 2020-01-01 ~ 2025-07-14
+2025-07-14 14:34:11,387 - mcp-unified-service - INFO - 初始化AkShare缓存目录
+2025-07-14 14:34:11,388 - mcp-unified-service - INFO - 预加载沪深300指数数据: 2020-01-01 ~ 2025-07-14
+2025-07-14 14:34:58,969 - mcp-unified-service - INFO - 沪深300指数数据加载完成
+2025-07-14 14:34:59,003 - mcp-unified-service - INFO - 初始化AkShare缓存目录
+2025-07-14 14:34:59,003 - mcp-unified-service - INFO - 预加载沪深300指数数据: 2020-01-01 ~ 2025-07-14
+2025-07-14 14:35:02,154 - mcp-unified-service - INFO - 沪深300指数数据加载完成
+2025-07-14 14:35:17,721 - mcp-unified-service - INFO - 初始化AkShare缓存目录
+2025-07-14 14:35:17,722 - mcp-unified-service - INFO - 预加载沪深300指数数据: 2020-01-01 ~ 2025-07-14
+2025-07-14 14:35:58,181 - mcp-unified-service - INFO - 沪深300指数数据加载完成
+2025-07-14 14:35:58,227 - mcp-unified-service - INFO - 初始化AkShare缓存目录
+2025-07-14 14:35:58,227 - mcp-unified-service - INFO - 预加载沪深300指数数据: 2020-01-01 ~ 2025-07-14
+2025-07-14 14:36:01,509 - mcp-unified-service - INFO - 沪深300指数数据加载完成

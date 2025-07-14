@@ -67,4 +67,4 @@ service.log
 .gitpod.yml
 index_cache/
 etf_cache/
-stock_cache/.gemini/
+stock_cache/
