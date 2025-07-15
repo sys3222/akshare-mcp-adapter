@@ -35,7 +35,21 @@ class AKShareAdaptor:
                     return timedelta(days=30)  # Cache for 30 days for historical data
             except ValueError:
                 pass  # Ignore if date format is wrong
-        
+
+        # 检查是否是实时数据接口（通常不带日期参数）
+        realtime_interfaces = [
+            "stock_zh_a_spot_em", "fund_etf_spot_em", "stock_us_spot",
+            "futures_main_sina", "option_current_em"
+        ]
+
+        # 如果是实时数据且在交易时间内，缓存时间较短
+        current_hour = datetime.now().hour
+        if any(interface in str(params) for interface in realtime_interfaces):
+            if 9 <= current_hour <= 15:  # 交易时间内
+                return timedelta(minutes=5)  # 5分钟缓存
+            else:  # 非交易时间
+                return timedelta(hours=12)  # 12小时缓存
+
         # Default cache for 1 day for recent or non-timeseries data
         return timedelta(days=1)
 

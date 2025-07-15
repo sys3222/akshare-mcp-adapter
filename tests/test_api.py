@@ -2,7 +2,10 @@ import pytest
 from fastapi.testclient import TestClient
 import os
 import shutil
+import tempfile
+import json
 from pathlib import Path
+from datetime import datetime, timedelta
 
 # Add project root to path to allow importing 'main'
 import sys
@@ -145,3 +148,116 @@ def test_file_security_isolation(auth_headers, auth_headers_user2):
     # Cleanup: User 1 deletes their file
     response = client.delete("/api/data/files/user1_file.csv", headers=auth_headers)
     assert response.status_code == 200
+
+# --- Cache Status API Tests ---
+
+def test_cache_status_unauthenticated():
+    """Tests that /cache/status requires authentication."""
+    response = client.get("/api/cache/status")
+    assert response.status_code == 401
+
+def test_cache_status_empty_cache(auth_headers):
+    """Tests cache status when cache directory is empty."""
+    response = client.get("/api/cache/status", headers=auth_headers)
+    assert response.status_code == 200
+
+    data = response.json()
+    assert "cache_directory" in data
+    assert "total_files" in data
+    assert "total_size_mb" in data
+    assert "files" in data
+    assert data["total_files"] == 0
+    assert data["total_size_mb"] == 0
+    assert data["files"] == []
+
+def test_cache_status_with_files(auth_headers):
+    """Tests cache status when cache directory has files."""
+    # 创建临时缓存文件
+    cache_dir = Path("static/cache/system")
+    cache_dir.mkdir(parents=True, exist_ok=True)
+
+    # 创建测试缓存文件
+    test_file1 = cache_dir / "test_cache_1.parquet"
+    test_file2 = cache_dir / "test_cache_2.parquet"
+
+    # 写入一些测试数据
+    test_content = b"test parquet data"
+    test_file1.write_bytes(test_content)
+    test_file2.write_bytes(test_content * 2)  # 不同大小
+
+    try:
+        response = client.get("/api/cache/status", headers=auth_headers)
+        assert response.status_code == 200
+
+        data = response.json()
+        assert data["total_files"] == 2
+        assert data["total_size_mb"] > 0
+        assert len(data["files"]) == 2
+
+        # 检查文件信息结构
+        for file_info in data["files"]:
+            assert "filename" in file_info
+            assert "size_mb" in file_info
+            assert "modified_time" in file_info
+            assert "age_hours" in file_info
+            assert file_info["filename"] in ["test_cache_1.parquet", "test_cache_2.parquet"]
+            assert file_info["size_mb"] >= 0
+            assert file_info["age_hours"] >= 0
+
+    finally:
+        # 清理测试文件
+        if test_file1.exists():
+            test_file1.unlink()
+        if test_file2.exists():
+            test_file2.unlink()
+
+def test_cache_status_file_sorting(auth_headers):
+    """Tests that cache status files are sorted by modification time (newest first)."""
+    cache_dir = Path("static/cache/system")
+    cache_dir.mkdir(parents=True, exist_ok=True)
+
+    # 创建两个文件，设置不同的修改时间
+    old_file = cache_dir / "old_cache.parquet"
+    new_file = cache_dir / "new_cache.parquet"
+
+    old_file.write_bytes(b"old data")
+    new_file.write_bytes(b"new data")
+
+    # 设置旧文件的修改时间为1小时前
+    old_time = (datetime.now() - timedelta(hours=1)).timestamp()
+    os.utime(old_file, (old_time, old_time))
+
+    try:
+        response = client.get("/api/cache/status", headers=auth_headers)
+        assert response.status_code == 200
+
+        data = response.json()
+        assert len(data["files"]) == 2
+
+        # 检查文件按修改时间排序（最新的在前）
+        files = data["files"]
+        assert files[0]["filename"] == "new_cache.parquet"
+        assert files[1]["filename"] == "old_cache.parquet"
+        assert files[0]["age_hours"] < files[1]["age_hours"]
+
+    finally:
+        # 清理测试文件
+        if old_file.exists():
+            old_file.unlink()
+        if new_file.exists():
+            new_file.unlink()
+
+def test_cache_status_error_handling(auth_headers):
+    """Tests cache status error handling when cache directory doesn't exist."""
+    # 确保缓存目录不存在
+    cache_dir = Path("static/cache/system")
+    if cache_dir.exists():
+        shutil.rmtree(cache_dir)
+
+    response = client.get("/api/cache/status", headers=auth_headers)
+    assert response.status_code == 200
+
+    data = response.json()
+    assert data["total_files"] == 0
+    assert data["total_size_mb"] == 0
+    assert data["files"] == []

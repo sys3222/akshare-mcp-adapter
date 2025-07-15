@@ -1,0 +1,42 @@
+{
+  "daily_updates": [
+    {
+      "interface": "index_zh_a_hist",
+      "params": {
+        "symbol": "000001",
+        "period": "daily",
+        "start_date": "20240101",
+        "end_date": "20240107"
+      },
+      "description": "上证指数测试数据"
+    },
+    {
+      "interface": "stock_zh_a_hist",
+      "params": {
+        "symbol": "000001",
+        "period": "daily",
+        "start_date": "20240101",
+        "end_date": "20240107"
+      },
+      "description": "平安银行测试数据"
+    }
+  ],
+  "weekly_updates": [
+    {
+      "interface": "stock_zh_a_hist",
+      "params": {
+        "symbol": "600519",
+        "period": "daily",
+        "start_date": "20240101",
+        "end_date": "20240131"
+      },
+      "description": "贵州茅台月度测试数据"
+    }
+  ],
+  "cache_settings": {
+    "cleanup_days": 7,
+    "max_file_size_mb": 10,
+    "retry_attempts": 2,
+    "retry_delay_seconds": 1
+  }
+}

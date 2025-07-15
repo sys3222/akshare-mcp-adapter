@@ -134,3 +134,39 @@ def get_interfaces_config():
         raise HTTPException(status_code=404, detail="Interface configuration file not found.")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error reading interface configuration: {e}")
+
+@router.get("/cache/status", tags=["System"])
+async def get_cache_status(current_user: User = Depends(get_current_active_user)):
+    """获取缓存状态信息"""
+    try:
+        from pathlib import Path
+        import os
+        from datetime import datetime
+
+        cache_dir = Path("static/cache/system")
+        cache_info = {
+            "cache_directory": str(cache_dir),
+            "total_files": 0,
+            "total_size_mb": 0,
+            "files": []
+        }
+
+        if cache_dir.exists():
+            for cache_file in cache_dir.glob("*.parquet"):
+                file_stat = cache_file.stat()
+                file_info = {
+                    "filename": cache_file.name,
+                    "size_mb": round(file_stat.st_size / 1024 / 1024, 2),
+                    "modified_time": datetime.fromtimestamp(file_stat.st_mtime).isoformat(),
+                    "age_hours": round((datetime.now().timestamp() - file_stat.st_mtime) / 3600, 1)
+                }
+                cache_info["files"].append(file_info)
+                cache_info["total_size_mb"] += file_info["size_mb"]
+                cache_info["total_files"] += 1
+
+        cache_info["total_size_mb"] = round(cache_info["total_size_mb"], 2)
+        cache_info["files"] = sorted(cache_info["files"], key=lambda x: x["modified_time"], reverse=True)
+
+        return cache_info
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error getting cache status: {e}")

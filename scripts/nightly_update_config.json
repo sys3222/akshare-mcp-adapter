@@ -1,0 +1,116 @@
+{
+  "daily_updates": [
+    {
+      "interface": "stock_zh_a_spot_em",
+      "params": {},
+      "description": "A股实时行情数据"
+    },
+    {
+      "interface": "fund_etf_spot_em",
+      "params": {},
+      "description": "ETF实时行情数据"
+    },
+    {
+      "interface": "index_zh_a_hist",
+      "params": {
+        "symbol": "000001",
+        "period": "daily",
+        "start_date": "20240101",
+        "end_date": "20241231"
+      },
+      "description": "上证指数年度数据"
+    },
+    {
+      "interface": "index_zh_a_hist", 
+      "params": {
+        "symbol": "000300",
+        "period": "daily",
+        "start_date": "20240101", 
+        "end_date": "20241231"
+      },
+      "description": "沪深300指数年度数据"
+    },
+    {
+      "interface": "index_zh_a_hist",
+      "params": {
+        "symbol": "000905",
+        "period": "daily",
+        "start_date": "20240101",
+        "end_date": "20241231"
+      },
+      "description": "中证500指数年度数据"
+    },
+    {
+      "interface": "stock_zh_a_hist",
+      "params": {
+        "symbol": "000001",
+        "period": "daily",
+        "start_date": "20240101",
+        "end_date": "20241231"
+      },
+      "description": "平安银行年度数据"
+    },
+    {
+      "interface": "stock_zh_a_hist",
+      "params": {
+        "symbol": "600519",
+        "period": "daily", 
+        "start_date": "20240101",
+        "end_date": "20241231"
+      },
+      "description": "贵州茅台年度数据"
+    },
+    {
+      "interface": "fund_etf_hist_em",
+      "params": {
+        "symbol": "510300",
+        "period": "daily",
+        "start_date": "20240101",
+        "end_date": "20241231"
+      },
+      "description": "沪深300ETF年度数据"
+    },
+    {
+      "interface": "fund_etf_hist_em",
+      "params": {
+        "symbol": "510500",
+        "period": "daily",
+        "start_date": "20240101", 
+        "end_date": "20241231"
+      },
+      "description": "中证500ETF年度数据"
+    }
+  ],
+  "weekly_updates": [
+    {
+      "interface": "stock_yjbb_em",
+      "params": {
+        "date": "2024"
+      },
+      "description": "A股业绩报表数据"
+    },
+    {
+      "interface": "stock_financial_abstract",
+      "params": {
+        "symbol": "000001"
+      },
+      "description": "平安银行财务摘要"
+    },
+    {
+      "interface": "macro_china_gdp",
+      "params": {},
+      "description": "中国GDP数据"
+    },
+    {
+      "interface": "macro_china_cpi",
+      "params": {},
+      "description": "中国CPI数据"
+    }
+  ],
+  "cache_settings": {
+    "cleanup_days": 30,
+    "max_file_size_mb": 50,
+    "retry_attempts": 3,
+    "retry_delay_seconds": 10
+  }
+}
