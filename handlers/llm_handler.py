@@ -1,22 +1,102 @@
 """
 LLM智能分析处理器
-实现意图判断、数据分析和建议生成的完整流程
+集成真实LLM模型，实现智能金融数据分析和建议生成
+支持基于规则的本地分析和基于LLM的智能分析两种模式
 """
 
 import json
 import logging
 import re
-from typing import Dict, Any, List, Optional, Tuple
+import os
+from typing import Dict, Any, List, Optional, Tuple, Union
 from enum import Enum
 from dataclasses import dataclass
 import pandas as pd
 import numpy as np
 
+# LLM相关导入
+try:
+    import google.generativeai as genai
+    from google.generativeai.types import GenerationConfig, Tool, FunctionDeclaration
+    LLM_AVAILABLE = True
+except ImportError:
+    LLM_AVAILABLE = False
+    print("Warning: Google Generative AI not available. Using rule-based analysis only.")
+
 from core.mcp_protocol import MCPRequest
-from handlers.mcp_handler import handle_mcp_data_request
+from handlers.mcp_handler import handle_mcp_data_request, _get_and_normalize_akshare_data
 from models.schemas import PaginatedDataResponse
 
 logger = logging.getLogger("mcp-unified-service")
+
+# --- LLM配置和工具定义 ---
+
+def configure_llm():
+    """配置LLM模型"""
+    if not LLM_AVAILABLE:
+        return False
+
+    try:
+        gemini_api_key = os.environ.get("GEMINI_API_KEY")
+        if not gemini_api_key:
+            logger.warning("GEMINI_API_KEY not found in environment. LLM features disabled.")
+            return False
+
+        genai.configure(api_key=gemini_api_key)
+        logger.info("LLM (Gemini) configured successfully")
+        return True
+    except Exception as e:
+        logger.error(f"Failed to configure LLM: {e}")
+        return False
+
+# 定义AkShare数据获取工具
+def create_akshare_tool():
+    """创建AkShare数据获取工具定义"""
+    get_akshare_data_func = FunctionDeclaration(
+        name="get_akshare_data",
+        description="根据接口名称和参数从AkShare获取中国金融市场数据。支持股票、基金、指数、宏观经济等各类数据。",
+        parameters={
+            "type": "object",
+            "properties": {
+                "interface": {
+                    "type": "string",
+                    "description": "要调用的AkShare接口名称。例如: 'stock_zh_a_hist'(A股历史数据), 'stock_zh_a_spot_em'(A股实时数据), 'index_zh_a_hist'(指数数据), 'macro_china_gdp'(GDP数据)等。",
+                },
+                "params": {
+                    "type": "object",
+                    "description": "接口所需参数的字典。例如: {'symbol': '000001', 'period': 'daily', 'start_date': '20240101', 'end_date': '20241231'}",
+                },
+            },
+            "required": ["interface", "params"],
+        },
+    )
+
+    return Tool(function_declarations=[get_akshare_data_func])
+
+def load_and_format_interfaces():
+    """加载并格式化接口描述供LLM使用"""
+    try:
+        with open("akshare_interfaces.json", "r", encoding="utf-8") as f:
+            interfaces = json.load(f)
+
+        formatted_string = "可用的AkShare接口列表如下，请根据用户问题选择最合适的接口：\n\n"
+        for endpoint in interfaces.get("endpoints", []):
+            name = endpoint.get("name")
+            description = endpoint.get("description")
+            params = endpoint.get("input", {})
+            param_str = ", ".join([f"{k}: {v}" for k, v in params.items()])
+            formatted_string += f"- 接口: '{name}'\n"
+            formatted_string += f"  描述: {description}\n"
+            if param_str:
+                formatted_string += f"  参数: {param_str}\n"
+            formatted_string += "\n"
+        return formatted_string
+    except Exception as e:
+        logger.error(f"Error loading interfaces: {e}")
+        return "无法加载接口列表。\n"
+
+# 全局LLM配置状态
+LLM_CONFIGURED = configure_llm() if LLM_AVAILABLE else False
 
 class IntentType(Enum):
     """用户意图类型"""
@@ -49,12 +129,26 @@ class AnalysisResult:
     confidence: float             # 分析置信度
 
 class LLMAnalysisHandler:
-    """LLM智能分析处理器"""
-    
-    def __init__(self):
+    """增强的LLM智能分析处理器
+
+    支持两种分析模式：
+    1. 基于规则的本地分析（快速、离线）
+    2. 基于LLM的智能分析（强大、需要API）
+    """
+
+    def __init__(self, use_llm: bool = True):
+        self.use_llm = use_llm and LLM_CONFIGURED
         self.intent_patterns = self._load_intent_patterns()
         self.analysis_templates = self._load_analysis_templates()
-        self._last_context = None  # 存储最后一次分析的上下文
+        self._last_context = None
+
+        # LLM相关配置
+        if self.use_llm:
+            self.akshare_tool = create_akshare_tool()
+            self.model_name = "gemini-1.5-flash-latest"
+            logger.info("LLM分析模式已启用")
+        else:
+            logger.info("使用基于规则的分析模式")
     
     def _load_intent_patterns(self) -> Dict[IntentType, List[str]]:
         """加载意图识别模式"""
@@ -148,24 +242,15 @@ class LLMAnalysisHandler:
     async def analyze_query(self, query: str, username: str = None) -> AnalysisResult:
         """分析用户查询并返回智能分析结果"""
         try:
-            # 1. 意图识别
-            context = self._identify_intent(query)
-            self._last_context = context  # 存储上下文
-            logger.info(f"识别意图: {context.intent.value}, 置信度: {context.confidence}")
+            if self.use_llm:
+                # 使用LLM进行智能分析
+                return await self._analyze_with_llm(query, username)
+            else:
+                # 使用基于规则的分析
+                return await self._analyze_with_rules(query, username)
 
-            # 2. 获取相关数据
-            data_responses = await self._fetch_relevant_data(context, username)
-
-            # 3. 数据分析
-            analysis_result = await self._analyze_data(context, data_responses)
-
-            # 4. 生成建议
-            analysis_result = self._generate_recommendations(context, analysis_result)
-
-            return analysis_result
-            
         except Exception as e:
-            logger.error(f"LLM分析过程出错: {e}")
+            logger.error(f"分析过程出错: {e}")
             return AnalysisResult(
                 summary="分析过程中出现错误，请稍后重试",
                 insights=["数据获取失败"],
@@ -174,6 +259,168 @@ class LLMAnalysisHandler:
                 charts_suggested=[],
                 risk_level="未知",
                 confidence=0.0
+            )
+
+    async def _analyze_with_llm(self, query: str, username: str = None) -> AnalysisResult:
+        """使用LLM进行智能分析"""
+        try:
+            model = genai.GenerativeModel(
+                model_name=self.model_name,
+                tools=[self.akshare_tool]
+            )
+
+            # 构建包含接口信息的完整提示
+            available_tools_prompt = load_and_format_interfaces()
+
+            system_prompt = """你是一个专业的金融数据分析师。请根据用户的问题：
+1. 选择合适的AkShare接口获取数据
+2. 分析数据并提供专业洞察
+3. 给出具体的投资建议和风险评估
+
+请用中文回答，并保持专业、客观的分析态度。"""
+
+            full_prompt = f"{system_prompt}\n\n{available_tools_prompt}\n---\n\n用户问题: {query}"
+
+            # 发送请求到LLM
+            response = model.generate_content(full_prompt)
+            response_part = response.candidates[0].content.parts[0]
+
+            # 检查是否需要调用工具
+            if hasattr(response_part, 'function_call') and response_part.function_call.name == "get_akshare_data":
+                args = response_part.function_call.args
+                logger.info(f"LLM请求调用工具: {args}")
+
+                # 调用实际的数据获取函数
+                try:
+                    tool_result = await _get_and_normalize_akshare_data(
+                        interface=args["interface"],
+                        params=args.get("params", {})
+                    )
+
+                    # 限制返回给LLM的数据量
+                    if isinstance(tool_result, list) and len(tool_result) > 50:
+                        tool_result = tool_result[:50] + [{"message": "... (数据已截断，仅显示前50条)"}]
+
+                except Exception as e:
+                    error_message = f"数据获取失败: {str(e)}"
+                    logger.error(error_message)
+                    tool_result = {"error": error_message}
+
+                # 构建对话历史
+                conversation_history = [
+                    {"role": "user", "parts": [{"text": full_prompt}]},
+                    {"role": "model", "parts": [response_part]},
+                    {"role": "tool", "parts": [{"function_response": {
+                        "name": "get_akshare_data",
+                        "response": {"content": json.dumps(tool_result, ensure_ascii=False)}
+                    }}]}
+                ]
+
+                # 获取最终分析结果
+                final_response = model.generate_content(conversation_history)
+                final_text = final_response.candidates[0].content.parts[0].text
+            else:
+                # 无需工具调用，直接返回LLM响应
+                final_text = response_part.text
+
+            # 解析LLM响应并构建结构化结果
+            return self._parse_llm_response(final_text, query)
+
+        except Exception as e:
+            logger.error(f"LLM分析失败: {e}")
+            # 回退到基于规则的分析
+            return await self._analyze_with_rules(query, username)
+
+    async def _analyze_with_rules(self, query: str, username: str = None) -> AnalysisResult:
+        """使用基于规则的分析（原有逻辑）"""
+        # 1. 意图识别
+        context = self._identify_intent(query)
+        self._last_context = context
+        logger.info(f"识别意图: {context.intent.value}, 置信度: {context.confidence}")
+
+        # 2. 获取相关数据
+        data_responses = await self._fetch_relevant_data(context, username)
+
+        # 3. 数据分析
+        analysis_result = await self._analyze_data(context, data_responses)
+
+        # 4. 生成建议
+        analysis_result = self._generate_recommendations(context, analysis_result)
+
+        return analysis_result
+
+    def _parse_llm_response(self, llm_text: str, original_query: str) -> AnalysisResult:
+        """解析LLM响应并构建结构化结果"""
+        try:
+            # 尝试从LLM响应中提取结构化信息
+            insights = []
+            recommendations = []
+            data_points = {}
+            charts_suggested = []
+            risk_level = "中等风险"
+
+            # 简单的文本解析逻辑
+            lines = llm_text.split('\n')
+            current_section = None
+
+            for line in lines:
+                line = line.strip()
+                if not line:
+                    continue
+
+                # 识别不同的部分
+                if any(keyword in line for keyword in ['分析', '洞察', '发现']):
+                    current_section = 'insights'
+                elif any(keyword in line for keyword in ['建议', '推荐', '策略']):
+                    current_section = 'recommendations'
+                elif any(keyword in line for keyword in ['风险', '风险等级']):
+                    if '高风险' in line:
+                        risk_level = "高风险"
+                    elif '低风险' in line:
+                        risk_level = "低风险"
+                    else:
+                        risk_level = "中等风险"
+
+                # 提取要点
+                if line.startswith(('•', '-', '*', '1.', '2.', '3.')):
+                    content = re.sub(r'^[•\-*\d\.]\s*', '', line)
+                    if current_section == 'insights':
+                        insights.append(content)
+                    elif current_section == 'recommendations':
+                        recommendations.append(content)
+
+            # 如果没有提取到结构化信息，使用整个响应作为摘要
+            if not insights and not recommendations:
+                insights = [llm_text[:200] + "..." if len(llm_text) > 200 else llm_text]
+
+            # 根据查询内容建议图表类型
+            if any(keyword in original_query for keyword in ['股票', '价格', '走势']):
+                charts_suggested = ["价格走势图", "成交量图"]
+            elif any(keyword in original_query for keyword in ['市场', '大盘']):
+                charts_suggested = ["市场热力图", "行业分布图"]
+            elif any(keyword in original_query for keyword in ['财务', 'PE', 'PB']):
+                charts_suggested = ["财务指标图", "估值对比图"]
+
+            return AnalysisResult(
+                summary=llm_text[:300] + "..." if len(llm_text) > 300 else llm_text,
+                insights=insights[:5],  # 限制数量
+                recommendations=recommendations[:5],
+                data_points=data_points,
+                charts_suggested=charts_suggested,
+                risk_level=risk_level,
+                confidence=0.9  # LLM分析的置信度较高
+            )
+
+        except Exception as e:
+            logger.error(f"解析LLM响应失败: {e}")
+            return AnalysisResult(
+                summary=llm_text,
+                insights=["LLM分析完成"],
+                recommendations=["请参考分析内容"],
+                data_points={},
+                charts_suggested=[],
+                risk_level="未知",
+                confidence=0.7
             )
     
     def _identify_intent(self, query: str) -> AnalysisContext:
@@ -676,4 +923,8 @@ class LLMAnalysisHandler:
         ]
 
 # 创建全局实例
-llm_analysis_handler = LLMAnalysisHandler()
+# 优先使用LLM模式，如果不可用则回退到规则模式
+llm_analysis_handler = LLMAnalysisHandler(use_llm=True)
+
+# 创建仅使用规则的实例（用于对比测试）
+rule_based_handler = LLMAnalysisHandler(use_llm=False)

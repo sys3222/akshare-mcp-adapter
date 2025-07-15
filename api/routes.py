@@ -177,12 +177,15 @@ async def get_cache_status(current_user: User = Depends(get_current_active_user)
 @router.post("/llm/analyze", response_model=LLMAnalysisResponse, tags=["LLM Analysis"])
 async def llm_intelligent_analysis(
     request: LLMAnalysisRequest,
+    use_llm: bool = True,
     current_user: User = Depends(get_current_active_user)
 ) -> LLMAnalysisResponse:
     """
     LLM智能分析接口
 
-    基于用户的自然语言查询，进行意图识别、数据获取、智能分析和建议生成
+    支持两种分析模式：
+    1. LLM模式 (use_llm=True): 使用Gemini模型进行智能分析，支持自动工具调用
+    2. 规则模式 (use_llm=False): 使用基于规则的本地分析，快速响应
 
     支持的查询类型：
     - 股票分析：分析000001、平安银行怎么样
@@ -192,13 +195,19 @@ async def llm_intelligent_analysis(
     - 对比分析：000001 vs 600519哪个更好
     - 投资建议：推荐一些股票
     - 风险评估：000001投资风险如何
+
+    参数：
+    - use_llm: 是否使用LLM模式（默认True）
     """
     try:
         # 导入LLM处理器
-        from handlers.llm_handler import llm_analysis_handler
+        from handlers.llm_handler import llm_analysis_handler, rule_based_handler
+
+        # 根据参数选择分析器
+        handler = llm_analysis_handler if use_llm else rule_based_handler
 
         # 执行智能分析
-        analysis_result = await llm_analysis_handler.analyze_query(
+        analysis_result = await handler.analyze_query(
             query=request.query,
             username=current_user.username
         )
