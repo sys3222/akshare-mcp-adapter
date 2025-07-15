@@ -102,7 +102,39 @@
         // --- Authentication & Core Logic ---
         async function apiFetch(url, options = {}) { /* ... existing code ... */ }
         function handleLogout() { /* ... existing code ... */ }
-        async function checkAuth() { /* ... existing code ... */ }
+        async function checkAuth() {
+            const token = localStorage.getItem('accessToken');
+            const loginModal = document.getElementById('login-modal');
+            const appContent = document.getElementById('app-content');
+
+            if (!token) {
+                loginModal.style.display = 'flex';
+                appContent.style.display = 'none';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/users/me', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    const user = await response.json();
+                    loginModal.style.display = 'none';
+                    appContent.style.display = 'block';
+                    document.getElementById('user-display').textContent = `Welcome, ${user.username}`;
+                } else {
+                    localStorage.removeItem('accessToken');
+                    loginModal.style.display = 'flex';
+                    appContent.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                localStorage.removeItem('accessToken');
+                loginModal.style.display = 'flex';
+                appContent.style.display = 'none';
+            }
+        }
         document.getElementById('login-form').addEventListener('submit', async function(e) { /* ... existing code ... */ });
         document.getElementById('logout-btn').addEventListener('click', handleLogout);
         document.querySelectorAll('.tab').forEach(tab => { /* ... existing code ... */ });
@@ -166,10 +198,215 @@
                 <h3>集成回测 - AkShare数据 + 策略</h3>
                 <p>使用AkShare数据接口直接进行策略回测，无需手动下载数据</p>
                 <div class="form-group"><label for="strategy-file-integrated">策略文件 (.py):</label><input type="file" id="strategy-file-integrated" name="strategy_file_integrated" accept=".py" required></div>
-                <div class="form-group"><label for="integrated-interface">数据接口:</label><select id="integrated-interface" name="integrated_interface"><option value="stock_zh_a_hist" selected>股票历史数据</option><option value="fund_etf_hist_em">ETF历史数据</option><option value="index_zh_a_hist">指数历史数据</option></select></div>
+                <div class="form-group"><label for="integrated-interface">数���接口:</label><select id="integrated-interface" name="integrated_interface"><option value="stock_zh_a_hist" selected>股票历史数据</option><option value="fund_etf_hist_em">ETF历史数据</option><option value="index_zh_a_hist">指数历史数据</option></select></div>
                 <div class="form-group"><label for="integrated-symbol">代码:</label><input type="text" id="integrated-symbol" name="integrated_symbol" value="000001" placeholder="例如: 000001, 518880"></div>
                 <div class="form-group"><label for="integrated-start-date">开始日期:</label><input type="text" id="integrated-start-date" name="integrated_start_date" value="20230101" placeholder="格式: YYYYMMDD"></div>
                 <div class="form-group"><label for="integrated-end-date">结束日期:</label><input type="text" id="integrated-end-date" name="integrated_end_date" value="20231231" placeholder="格式: YYYYMMDD"></div>`;
+        });
+
+        // --- Full Implementations ---
+
+        async function apiFetch(url, options = {}) {
+            const token = localStorage.getItem('accessToken');
+            const headers = { ...options.headers };
+
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
+            if (!(options.body instanceof FormData)) {
+                headers['Content-Type'] = 'application/json';
+            }
+            
+            const response = await fetch(url, { ...options, headers });
+
+            if (response.status === 401) {
+                localStorage.removeItem('accessToken');
+                location.reload();
+                throw new Error('Unauthorized');
+            }
+            
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ detail: response.statusText }));
+                throw new Error(errorData.detail || 'An unknown error occurred.');
+            }
+
+            if (response.status === 204) return null;
+            return response.json();
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('accessToken');
+            location.reload();
+        }
+
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const loginError = document.getElementById('login-error');
+            loginError.textContent = '';
+            const formData = new FormData(e.target);
+            
+            try {
+                const response = await fetch('/api/token', { method: 'POST', body: formData });
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Login failed.');
+                }
+                const data = await response.json();
+                localStorage.setItem('accessToken', data.access_token);
+                location.reload();
+            } catch (error) {
+                loginError.textContent = error.message;
+            }
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', handleLogout);
+
+        document.getElementById('backtest-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formError = document.getElementById('form-error');
+            const resultsDiv = document.getElementById('results');
+            formError.textContent = '';
+            resultsDiv.style.display = 'none';
+            resultsDiv.innerHTML = 'Running backtest...';
+
+            const activeTab = document.querySelector('.tab.active').dataset.tab;
+            const formData = new FormData();
+            let url = '';
+
+            const paramsInput = document.getElementById('params').value;
+            if (paramsInput) formData.append('params', paramsInput);
+            const benchmark = document.getElementById('benchmark-symbol').value;
+            if (benchmark) formData.append('benchmark_symbol', benchmark);
+
+            try {
+                if (activeTab === 'file-upload') {
+                    url = '/api/backtest';
+                    const strategyFile = document.getElementById('strategy-file').files[0];
+                    const dataFile = document.getElementById('data-file').files[0];
+                    if (!strategyFile || !dataFile) throw new Error('Strategy and data files are required.');
+                    formData.append('strategy_file', strategyFile);
+                    formData.append('data_file', dataFile);
+                } else if (activeTab === 'integrated') {
+                    url = '/api/backtest-with-mcp';
+                    const strategyFile = document.getElementById('strategy-file-integrated').files[0];
+                    if (!strategyFile) throw new Error('Strategy file is required.');
+                    formData.append('strategy_file', strategyFile);
+                    formData.append('interface', document.getElementById('integrated-interface').value);
+                    formData.append('symbol', document.getElementById('integrated-symbol').value);
+                    formData.append('start_date', document.getElementById('integrated-start-date').value);
+                    formData.append('end_date', document.getElementById('integrated-end-date').value);
+                } else { return; }
+
+                const result = await apiFetch(url, { method: 'POST', body: formData });
+                displayResults(result);
+            } catch (error) {
+                formError.textContent = `Error: ${error.message}`;
+            }
+        });
+
+        function displayResults(result) {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.style.display = 'block';
+            let metricsHtml = '<h3>Backtest Metrics</h3><div class="metrics">';
+            for (const key in result.metrics) {
+                metricsHtml += `<div class="metric-item"><span class="metric-name">${key}:</span> ${result.metrics[key]}</div>`;
+            }
+            metricsHtml += '</div>';
+            const plotHtml = `<h3>Equity Curve</h3><img src="data:image/png;base64,${result.plot_base64}" alt="Equity Curve Plot" style="width:100%;">`;
+            resultsDiv.innerHTML = metricsHtml + plotHtml;
+        }
+
+        async function fetchDataForAnalysis(page = 1) {
+            const interfaceName = document.getElementById('da-interface').value;
+            const paramsJson = document.getElementById('da-params').value;
+            const resultsContainer = document.getElementById('data-analysis-results');
+            
+            // Show loading indicator immediately
+            resultsContainer.style.display = 'block';
+            resultsContainer.innerHTML = '<p>Loading data, please wait...</p>';
+
+            if (!interfaceName) {
+                alert('Please select an interface.');
+                resultsContainer.style.display = 'none';
+                return;
+            }
+            let params;
+            try {
+                params = JSON.parse(paramsJson);
+            } catch (e) {
+                alert('Invalid JSON in parameters.');
+                resultsContainer.style.display = 'none';
+                return;
+            }
+            const requestBody = {
+                interface: interfaceName,
+                params: params,
+                request_id: `req-${Date.now()}`
+            };
+            try {
+                const url = `/api/mcp-data?page=${page}&page_size=20`;
+                const result = await apiFetch(url, { method: 'POST', body: JSON.stringify(requestBody) });
+
+                if (result.error) {
+                    throw new Error(result.error);
+                }
+                
+                // Clear loading message and prepare for new content
+                resultsContainer.innerHTML = `
+                    <div class="pagination-container" id="pagination-top"></div>
+                    <div class="data-table-container"><table class="data-table" id="data-analysis-table"><thead></thead><tbody></tbody></table></div>
+                    <div class="pagination-container" id="pagination-bottom"></div>
+                `;
+
+                renderDataTable(result.data);
+                renderPagination(result.total_pages, result.current_page, result.total_records);
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                resultsContainer.innerHTML = `<p class="error">An error occurred: ${error.message}</p>`;
+            }
+        }
+
+        function renderDataTable(data) {
+            const table = document.getElementById('data-analysis-table');
+            table.innerHTML = '';
+            if (!data || data.length === 0) { table.innerHTML = '<tr><td>No data returned.</td></tr>'; return; }
+            const thead = table.createTHead();
+            const headerRow = thead.insertRow();
+            Object.keys(data[0]).forEach(key => {
+                const th = document.createElement('th');
+                th.textContent = key;
+                headerRow.appendChild(th);
+            });
+            const tbody = table.createTBody();
+            data.forEach(item => {
+                const row = tbody.insertRow();
+                Object.values(item).forEach(text => {
+                    const cell = row.insertCell();
+                    cell.textContent = text;
+                });
+            });
+        }
+
+        function renderPagination(totalPages, currentPage, totalRecords) {
+            const topPagination = document.getElementById('pagination-top');
+            const bottomPagination = document.getElementById('pagination-bottom');
+            if (totalPages <= 1) { topPagination.innerHTML = ''; bottomPagination.innerHTML = ''; return; }
+            let paginationHtml = `<div>Page ${currentPage} of ${totalPages} (${totalRecords} records)</div><div>`;
+            if (currentPage > 1) { paginationHtml += `<button onclick="fetchDataForAnalysis(${currentPage - 1})">Previous</button>`; }
+            if (currentPage < totalPages) { paginationHtml += `<button onclick="fetchDataForAnalysis(${currentPage + 1})">Next</button>`; }
+            paginationHtml += `</div>`;
+            topPagination.innerHTML = paginationHtml;
+            bottomPagination.innerHTML = paginationHtml;
+        }
+
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab + '-tab').classList.add('active');
+            });
         });
     </script>
 </body>

@@ -1,4 +1,4 @@
-# MCP 统一服务 - AkShare数据 + 量化回测 v2.2.0
+# MCP 统一服务 - AkShare数据 + 量化回测 v3.0.0
 
 一个统一的MCP (Microservice Control Protocol) 服务，提供两大核心功能：
 1. **AkShare数据接口** - 通过标准化MCP协议访问中国金融市场数据
@@ -7,6 +7,8 @@
 ## 🚀 核心功能
 
 ### 📊 AkShare数据接口 (MCP协议)
+- **用户认证 (OAuth2/JWT)**: 通过Token保护核心API接口，确保服务安全。
+- **数据缓存**: 内置文件缓存机制，显著提升常用数据的响应速度。
 - 股票历史数据 (`stock_zh_a_hist`)
 - 基金信息 (`fund_em_open_fund_info`) 
 - 指数历史数据 (`index_zh_a_hist`)
@@ -40,7 +42,16 @@ python main.py
 
 所有API端点都以 `/api` 为前缀。
 
-### 1. MCP数据接口
+### 1. 认证接口
+```bash
+# 获取Token
+POST /api/token
+
+# 获取当前用户信息 (需要Token)
+GET /api/users/me
+```
+
+### 2. MCP数据接口 (需要Token)
 ```bash
 POST /api/mcp-data
 ```
@@ -48,8 +59,9 @@ POST /api/mcp-data
 **请求示例**:
 ```bash
 # 获取股票历史数据
-curl -X POST http://localhost:12001/api/mcp-data \
--H "Content-Type: application/json" \
+curl -X POST http://localhost:12001/api/mcp-data 
+-H "Content-Type: application/json" 
+-H "Authorization: Bearer <YOUR_TOKEN>" 
 -d '{
     "interface": "stock_zh_a_hist",
     "params": {
@@ -60,99 +72,24 @@ curl -X POST http://localhost:12001/api/mcp-data \
     },
     "request_id": "test001"
 }'
-
-# 获取基金信息
-curl -X POST http://localhost:12001/api/mcp-data \
--H "Content-Type: application/json" \
--d '{
-    "interface": "fund_em_open_fund_info",
-    "params": {"fund": "000001", "indicator": "单位净值走势"},
-    "request_id": "test002"
-}'
 ```
 
-### 2. 回测接口
+### 3. 回测接口 (需要Token)
 ```bash
 POST /api/backtest
 ```
 
-支持文件上传和AkShare数据源两种方式。
-
-### 3. 代码回测接口
+### 4. 代码回测接口 (需要Token)
 ```bash
 POST /api/backtest-code
 ```
 
-只需提供策略代码，数据直接从AkShare获取。
-
-**请求示例**:
-```bash
-curl -X POST http://localhost:12001/api/backtest-code \
--H "Content-Type: application/json" \
--d '{
-    "strategy_code": "import backtrader as bt\n\nclass MyStrategy(bt.Strategy):\n    def __init__(self):\n        self.sma = bt.indicators.SimpleMovingAverage(self.data.close, period=20)\n\n    def next(self):\n        if self.data.close[0] > self.sma[0]:\n            self.buy()\n        elif self.data.close[0] < self.sma[0]:\n            self.sell()\n",
-    "symbol": "000001",
-    "start_date": "2023-01-01",
-    "end_date": "2023-12-31",
-    "params": {"cash": 100000},
-    "benchmark_symbol": "000300"
-}'
-```
-
-### 4. AkShare代码执行接口
+### 5. AkShare代码执行接口 (需要Token)
 ```bash
 POST /api/execute-akshare
 ```
 
-直接提交AkShare代码片段，执行并返回结果。支持多种输出格式：JSON、CSV和HTML。
-
-**请求示例**:
-```bash
-curl -X POST http://localhost:12001/api/execute-akshare \
--H "Content-Type: application/json" \
--d '{
-    "code": "import akshare as ak\nstock_sz_a_spot_em_df = ak.stock_sz_a_spot_em()\nstock_sz_a_spot_em_df",
-    "format": "json"
-}'
-```
-
-**响应示例**:
-```json
-{
-  "result": [
-    {
-      "序号": 1,
-      "代码": "000001",
-      "名称": "平安银行",
-      "最新价": 8.12,
-      "涨跌幅": 0.87,
-      "涨跌额": 0.07,
-      "成交量": 31218700,
-      "成交额": 252274920.0,
-      "振幅": 1.24,
-      "最高": 8.19,
-      "最低": 8.09,
-      "今开": 8.12,
-      "昨收": 8.05,
-      "量比": 0.79,
-      "换手率": 0.16,
-      "市盈率-动态": 4.65,
-      "市净率": 0.69,
-      "总市值": 157553376000.0,
-      "流通市值": 157553376000.0,
-      "涨速": 0.0,
-      "5分钟涨跌": 0.0,
-      "60日涨跌幅": -9.78,
-      "年初至今涨跌幅": -5.36
-    },
-    ...
-  ],
-  "format": "json",
-  "error": null
-}
-```
-
-### 5. 数据源接口
+### 6. 数据源接口
 ```bash
 GET /api/data-sources
 ```
@@ -161,12 +98,14 @@ GET /api/data-sources
 
 ## 🖥️ Web界面功能
 
-### 四个主要标签页：
+一个功能完善的单页应用，提供以下功能：
 
-1. **File Upload** - 上传策略和数据文件进行回测
-2. **AkShare Data** - 使用AkShare数据源进行回测
-3. **MCP Interface** - 测试MCP数据接口
-4. **Integrated Backtest** - 直接使用AkShare数据接口进行回测，无需手动下载数据
+1. **用户认证** - 提供登录界面，管理访问权限。
+2. **回测** - 支持多种回测方式：
+    - 上传策略和数据文件。
+    - 直接使用AkShare数据源进行回测。
+3. **MCP接口测试** - 提供UI界面方便地测试MCP数据接口。
+4. **结果展示** - 以图表和表格形式清晰地展示回测性能和数据。
 
 ## 🛠️ 安装和部署
 
@@ -267,34 +206,16 @@ pytest tests/
 - `tests/sample_strategies/simple_ma_strategy.py` - 简单双均线策略
 - `tests/sample_strategies/rsi_strategy.py` - RSI超买超卖策略
 
-#### 简单双均线策略示例
-```python
-import backtrader as bt
-
-class SimpleMAStrategy(bt.Strategy):
-    params = (
-        ('fast_period', 10),  # 快速均线周期
-        ('slow_period', 30),  # 慢速均线周期
-    )
-    
-    def __init__(self):
-        # 添加移动平均线指标
-        self.fast_ma = bt.indicators.SMA(self.datas[0], period=self.params.fast_period)
-        self.slow_ma = bt.indicators.SMA(self.datas[0], period=self.params.slow_period)
-        self.crossover = bt.indicators.CrossOver(self.fast_ma, self.slow_ma)
-        
-    def next(self):
-        if not self.position:  # 没有持仓
-            if self.crossover > 0:  # 快线上穿慢线
-                self.buy()  # 买入
-        else:  # 已有持仓
-            if self.crossover < 0:  # 快线下穿慢线
-                self.sell()  # 卖出
-```
-
 ## 📝 更新日志
 
-### v2.2.0 (最新)
+### v3.0.0 (最新)
+- ✨ **新增 认证与授权**: 引入OAuth2/JWT保护核心API，提升服务安全性。
+- ✨ **新增 数据缓存机制**: 为AkShare接口增加文件缓存，大幅提升重复数据请求的响应速度。
+- ✨ **重构 Web用户界面**: `index.html` 全面升级为单页应用，支持用户登录、多种回测模式和交互式结果展示。
+- ✨ **优化 API数据格式**: 对MCP返回的数据进行统一规范化处理，确保输出格式的一致性。
+- ✨ **新增 单元测试**: 增加了对核心功能的单元测试。
+
+### v2.2.0
 - ✅ 新增AkShare代码执行接口，支持直接提交代码片段获取数据
 - ✅ 新增代码回测接口，只需提供策略代码即可使用AkShare数据进行回测
 - ✅ 添加示例策略文件，包括双均线策略和RSI策略

@@ -197,3 +197,160 @@ AttributeError: module 'bcrypt' has no attribute '__about__'
 2025-07-15 02:46:03,110 - mcp-unified-service - INFO - Service shutting down...
 2025-07-15 02:46:37,706 - mcp-unified-service - INFO - Service starting up...
 2025-07-15 02:46:37,708 - mcp-unified-service - INFO - Database and tables created successfully.
+2025-07-15 03:28:09,704 - mcp-unified-service - INFO - 启动MCP统一服务 - AkShare数据 + 量化回测
+2025-07-15 03:28:13,882 - mcp-unified-service - INFO - Service starting up...
+2025-07-15 03:28:13,885 - mcp-unified-service - INFO - Database and tables created successfully.
+2025-07-15 03:29:25,228 - mcp-unified-service - INFO - Service shutting down...
+2025-07-15 03:34:02,180 - mcp-unified-service - INFO - Service starting up...
+2025-07-15 03:34:02,183 - mcp-unified-service - INFO - Database and tables created successfully.
+2025-07-15 03:39:58,084 - mcp-unified-service - INFO - Service shutting down...
+2025-07-15 03:41:04,778 - mcp-unified-service - INFO - 启动MCP统一服务 - AkShare数据 + 量化回测
+2025-07-15 03:41:08,900 - mcp-unified-service - INFO - Service starting up...
+2025-07-15 03:41:08,902 - mcp-unified-service - INFO - Database and tables created successfully.
+2025-07-15 03:42:33,870 - mcp-unified-service - INFO - Service shutting down...
+2025-07-15 03:42:50,116 - mcp-unified-service - INFO - Service starting up...
+2025-07-15 03:42:50,118 - mcp-unified-service - INFO - Database and tables created successfully.
+2025-07-15 03:52:41,553 - passlib.handlers.bcrypt - WARNING - (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "/workspace/.pyenv_mirror/user/current/lib/python3.12/site-packages/passlib/handlers/bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2025-07-15 03:54:31,247 - mcp-unified-service - INFO - Service shutting down...
+2025-07-15 03:54:35,238 - mcp-unified-service - INFO - Service starting up...
+2025-07-15 03:54:35,240 - mcp-unified-service - INFO - Database and tables created successfully.
+2025-07-15 03:58:15,735 - mcp-unified-service - INFO - User 'admin' initiated MCP request (ID: req-1752551895424): Interface: stock_zh_a_hist, Params: {'symbol': '600519', 'period': 'daily', 'start_date': '20230101', 'end_date': '20231231'}
+2025-07-15 03:59:05,932 - mcp-unified-service - INFO - User 'admin' initiated MCP request (ID: req-1752551945615): Interface: stock_zh_a_hist, Params: {'symbol': '600519', 'period': 'daily', 'start_date': '20230101', 'end_date': '20231231'}
+2025-07-15 03:59:20,890 - mcp-unified-service - INFO - User 'admin' initiated MCP request (ID: req-1752551960583): Interface: stock_zh_a_spot_em, Params: {}
+2025-07-15 03:59:32,389 - mcp-unified-service - INFO - User 'admin' initiated MCP request (ID: req-1752551972092): Interface: stock_yjbb_em, Params: {'date': '20231231'}
+2025-07-15 04:00:59,756 - mcp-unified-service - ERROR - Error processing MCP request for interface 'stock_yjbb_em': Response ended prematurely
+2025-07-15 04:02:26,636 - mcp-unified-service - INFO - Service shutting down...
+2025-07-15 04:02:30,532 - mcp-unified-service - INFO - Service starting up...
+2025-07-15 04:02:30,534 - mcp-unified-service - INFO - Database and tables created successfully.
+2025-07-15 04:05:51,407 - mcp-unified-service - INFO - Service shutting down...
+2025-07-15 04:06:13,248 - mcp-unified-service - INFO - Service starting up...
+2025-07-15 04:06:13,250 - mcp-unified-service - INFO - Database and tables created successfully.
+2025-07-15 04:06:21,617 - mcp-unified-service - INFO - User 'admin' initiated MCP request (ID: req-1752552381355): Interface: stock_zh_a_hist, Params: {'symbol': '600519', 'period': 'daily', 'start_date': '20230101', 'end_date': '20231231'}
+2025-07-15 04:06:26,486 - mcp-unified-service - INFO - User 'admin' initiated MCP request (ID: req-1752552386217): Interface: stock_zh_a_spot_em, Params: {}
+2025-07-15 04:06:32,984 - mcp-unified-service - INFO - User 'admin' initiated MCP request (ID: req-1752552392715): Interface: stock_yjbb_em, Params: {'date': '20231231'}
+2025-07-15 04:06:35,381 - mcp-unified-service - INFO - User 'admin' initiated MCP request (ID: req-1752552395120): Interface: stock_yjbb_em, Params: {'date': '20231231'}
+2025-07-15 04:06:40,314 - mcp-unified-service - INFO - User 'admin' initiated MCP request (ID: req-1752552400057): Interface: stock_a_pe_and_pb_em, Params: {'symbol': 'sh'}
+2025-07-15 04:06:40,314 - mcp-unified-service - WARNING - Unsupported MCP interface called: stock_a_pe_and_pb_em
+2025-07-15 04:06:57,492 - mcp-unified-service - INFO - User 'admin' initiated MCP request (ID: req-1752552417234): Interface: stock_holder_number_em, Params: {'symbol': 'sh600000'}
+2025-07-15 04:06:57,492 - mcp-unified-service - WARNING - Unsupported MCP interface called: stock_holder_number_em
+2025-07-15 04:07:52,346 - mcp-unified-service - ERROR - Error processing MCP request for interface 'stock_yjbb_em': Response ended prematurely
+Traceback (most recent call last):
+  File "/home/gitpod/.pyenv/versions/3.12.11/lib/python3.12/site-packages/requests/models.py", line 820, in generate
+    yield from self.raw.stream(chunk_size, decode_content=True)
+  File "/home/gitpod/.pyenv/versions/3.12.11/lib/python3.12/site-packages/urllib3/response.py", line 1063, in stream
+    yield from self.read_chunked(amt, decode_content=decode_content)
+  File "/home/gitpod/.pyenv/versions/3.12.11/lib/python3.12/site-packages/urllib3/response.py", line 1219, in read_chunked
+    self._update_chunk_length()
+  File "/home/gitpod/.pyenv/versions/3.12.11/lib/python3.12/site-packages/urllib3/response.py", line 1149, in _update_chunk_length
+    raise ProtocolError("Response ended prematurely") from None
+urllib3.exceptions.ProtocolError: Response ended prematurely
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/workspace/akshare-mcp-adapter/handlers/mcp_handler.py", line 60, in handle_mcp_data_request
+    raw_result = await akshare_adaptor.call(request.interface, **request.params)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/akshare-mcp-adapter/adaptors/akshare.py", line 17, in call
+    return await loop.run_in_executor(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gitpod/.pyenv/versions/3.12.11/lib/python3.12/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/akshare-mcp-adapter/adaptors/akshare.py", line 19, in <lambda>
+    lambda: func(**params)
+            ^^^^^^^^^^^^^^
+  File "/workspace/.pyenv_mirror/user/current/lib/python3.12/site-packages/akshare/stock_feature/stock_yjbb_em.py", line 50, in stock_yjbb_em
+    r = requests.get(url, params=params)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gitpod/.pyenv/versions/3.12.11/lib/python3.12/site-packages/requests/api.py", line 73, in get
+    return request("get", url, params=params, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gitpod/.pyenv/versions/3.12.11/lib/python3.12/site-packages/requests/api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gitpod/.pyenv/versions/3.12.11/lib/python3.12/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gitpod/.pyenv/versions/3.12.11/lib/python3.12/site-packages/requests/sessions.py", line 746, in send
+    r.content
+  File "/home/gitpod/.pyenv/versions/3.12.11/lib/python3.12/site-packages/requests/models.py", line 902, in content
+    self._content = b"".join(self.iter_content(CONTENT_CHUNK_SIZE)) or b""
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gitpod/.pyenv/versions/3.12.11/lib/python3.12/site-packages/requests/models.py", line 822, in generate
+    raise ChunkedEncodingError(e)
+requests.exceptions.ChunkedEncodingError: Response ended prematurely
+2025-07-15 04:08:07,410 - mcp-unified-service - ERROR - Error processing MCP request for interface 'stock_yjbb_em': Response ended prematurely
+Traceback (most recent call last):
+  File "/home/gitpod/.pyenv/versions/3.12.11/lib/python3.12/site-packages/requests/models.py", line 820, in generate
+    yield from self.raw.stream(chunk_size, decode_content=True)
+  File "/home/gitpod/.pyenv/versions/3.12.11/lib/python3.12/site-packages/urllib3/response.py", line 1063, in stream
+    yield from self.read_chunked(amt, decode_content=decode_content)
+  File "/home/gitpod/.pyenv/versions/3.12.11/lib/python3.12/site-packages/urllib3/response.py", line 1219, in read_chunked
+    self._update_chunk_length()
+  File "/home/gitpod/.pyenv/versions/3.12.11/lib/python3.12/site-packages/urllib3/response.py", line 1149, in _update_chunk_length
+    raise ProtocolError("Response ended prematurely") from None
+urllib3.exceptions.ProtocolError: Response ended prematurely
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/workspace/akshare-mcp-adapter/handlers/mcp_handler.py", line 60, in handle_mcp_data_request
+    raw_result = await akshare_adaptor.call(request.interface, **request.params)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/akshare-mcp-adapter/adaptors/akshare.py", line 17, in call
+    return await loop.run_in_executor(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gitpod/.pyenv/versions/3.12.11/lib/python3.12/concurrent/futures/thread.py", line 59, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/akshare-mcp-adapter/adaptors/akshare.py", line 19, in <lambda>
+    lambda: func(**params)
+            ^^^^^^^^^^^^^^
+  File "/workspace/.pyenv_mirror/user/current/lib/python3.12/site-packages/akshare/stock_feature/stock_yjbb_em.py", line 50, in stock_yjbb_em
+    r = requests.get(url, params=params)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gitpod/.pyenv/versions/3.12.11/lib/python3.12/site-packages/requests/api.py", line 73, in get
+    return request("get", url, params=params, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gitpod/.pyenv/versions/3.12.11/lib/python3.12/site-packages/requests/api.py", line 59, in request
+    return session.request(method=method, url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gitpod/.pyenv/versions/3.12.11/lib/python3.12/site-packages/requests/sessions.py", line 589, in request
+    resp = self.send(prep, **send_kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gitpod/.pyenv/versions/3.12.11/lib/python3.12/site-packages/requests/sessions.py", line 746, in send
+    r.content
+  File "/home/gitpod/.pyenv/versions/3.12.11/lib/python3.12/site-packages/requests/models.py", line 902, in content
+    self._content = b"".join(self.iter_content(CONTENT_CHUNK_SIZE)) or b""
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gitpod/.pyenv/versions/3.12.11/lib/python3.12/site-packages/requests/models.py", line 822, in generate
+    raise ChunkedEncodingError(e)
+requests.exceptions.ChunkedEncodingError: Response ended prematurely
+2025-07-15 04:08:48,437 - mcp-unified-service - INFO - User 'admin' initiated MCP request (ID: req-1752552527345): Interface: stock_zh_a_hist, Params: {'symbol': '600519', 'period': 'daily', 'start_date': '20230101', 'end_date': '20231231'}
+2025-07-15 04:12:07,697 - mcp-unified-service - INFO - Service shutting down...
+2025-07-15 04:12:12,046 - mcp-unified-service - INFO - Service starting up...
+2025-07-15 04:12:12,048 - mcp-unified-service - INFO - Database and tables created successfully.
+2025-07-15 04:16:19,823 - mcp-unified-service - INFO - Service shutting down...
+2025-07-15 04:16:24,698 - mcp-unified-service - INFO - Service starting up...
+2025-07-15 04:16:24,701 - mcp-unified-service - INFO - Database and tables created successfully.
+2025-07-15 04:19:57,564 - mcp-unified-service - INFO - Service shutting down...
+2025-07-15 04:20:01,795 - mcp-unified-service - INFO - Service starting up...
+2025-07-15 04:20:01,797 - mcp-unified-service - INFO - Database and tables created successfully.
+2025-07-15 04:20:36,488 - mcp-unified-service - INFO - Service shutting down...
+2025-07-15 04:20:41,277 - mcp-unified-service - INFO - Service starting up...
+2025-07-15 04:20:41,279 - mcp-unified-service - INFO - Database and tables created successfully.
+2025-07-15 04:26:58,988 - passlib.handlers.bcrypt - WARNING - (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "/workspace/.pyenv_mirror/user/current/lib/python3.12/site-packages/passlib/handlers/bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2025-07-15 04:27:07,497 - mcp-unified-service - INFO - User 'admin' initiated MCP request (ID: req-1752553627148): Interface: stock_zh_a_hist, Params: {'symbol': '600519', 'period': 'daily', 'start_date': '20230101', 'end_date': '20231231'}
+2025-07-15 04:27:07,498 - mcp-unified-service - INFO - Cache miss for method 'stock_zh_a_hist'. Fetching fresh data.
+2025-07-15 04:27:08,889 - mcp-unified-service - INFO - Successfully cached data for method 'stock_zh_a_hist' to 'static/cache/e73f020f55b6a9f9dd062e0329bab10a96bbe2d7500f0e18f93e72b51a8c106e.parquet'.

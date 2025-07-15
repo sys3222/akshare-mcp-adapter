@@ -69,3 +69,4 @@ service.log
 index_cache/
 etf_cache/
 stock_cache/
+static/cache/
