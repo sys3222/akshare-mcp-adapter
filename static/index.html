@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Backtrader MCP Service</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; }
         h1, h2, h3, h4 { color: #333; }
@@ -41,6 +42,19 @@
         .data-table th, .data-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
         .data-table th { background-color: #f2f2f2; font-weight: bold; }
         .pagination-container { margin-top: 15px; display: flex; justify-content: space-between; align-items: center; }
+
+        /* Styles for LLM Chat */
+        #llm-chat-tab { display: flex; flex-direction: column; height: 70vh; }
+        .chat-container { flex-grow: 1; overflow-y: auto; padding: 20px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 20px; }
+        .message { margin-bottom: 15px; display: flex; flex-direction: column; }
+        .message.user { align-items: flex-end; }
+        .message.ai { align-items: flex-start; }
+        .message-bubble { max-width: 80%; padding: 10px 15px; border-radius: 18px; line-height: 1.5; }
+        .message.user .message-bubble { background-color: #007bff; color: white; }
+        .message.ai .message-bubble { background-color: #f1f1f1; color: #333; border: 1px solid #ddd; }
+        .message-bubble p { margin: 0; }
+        .chat-input-container { display: flex; }
+        #chat-input { flex-grow: 1; margin-right: 10px; }
     </style>
 </head>
 <body>
@@ -65,60 +79,70 @@
             <div class="tab active" data-tab="file-upload">文件上传回测</div>
             <div class="tab" data-tab="integrated">集成回测</div>
             <div class="tab" data-tab="data-analysis">数据分析</div>
+            <div class="tab" data-tab="llm-chat">LLM 问答 (旧)</div>
         </div>
         
-        <form id="main-form">
-            <div class="tab-content active" id="file-upload-tab">
-                <!-- Content for File Upload Tab -->
+        <div class="tab-content active" id="file-upload-tab">
+            <!-- Content for File Upload Tab -->
+        </div>
+        
+        <div class="tab-content" id="integrated-tab">
+            <!-- Content for Integrated Backtest Tab -->
+        </div>
+
+        <div class="tab-content" id="data-analysis-tab">
+            <h3>数据分析</h3>
+            <div class="sub-tabs">
+                <div class="sub-tab active" data-subtab="da-fetch">数据获取 (API)</div>
+                <div class="sub-tab" data-subtab="da-browse">我的数据文件</div>
             </div>
-            
-            <div class="tab-content" id="integrated-tab">
-                <!-- Content for Integrated Backtest Tab -->
+
+            <div class="sub-tab-content active" id="da-fetch-content">
+                <p>直接调用 AkShare 的原始数据接口 (最大 10 MB)。</p>
+                <div class="form-group"><label for="da-interface">接口名称:</label><select id="da-interface"><option value="">加载中...</option></select></div>
+                <div class="form-group"><label for="da-params">接口参数 (JSON):</label><textarea id="da-params" rows="6"></textarea></div>
+                <button type="button" onclick="fetchDataForAnalysis(1)">获取数据</button>
             </div>
 
-            <div class="tab-content" id="data-analysis-tab">
-                <h3>数据分析</h3>
-                <div class="sub-tabs">
-                    <div class="sub-tab active" data-subtab="da-fetch">数据获取 (API)</div>
-                    <div class="sub-tab" data-subtab="da-browse">我的数据文件</div>
-                </div>
-
-                <div class="sub-tab-content active" id="da-fetch-content">
-                    <p>直接调用 AkShare 的原始数据接口 (最大 10 MB)。</p>
-                    <div class="form-group"><label for="da-interface">接口名称:</label><select id="da-interface"><option value="">加载中...</option></select></div>
-                    <div class="form-group"><label for="da-params">接口参数 (JSON):</label><textarea id="da-params" rows="6"></textarea></div>
-                    <button type="button" onclick="fetchDataForAnalysis(1)">获取数据</button>
-                </div>
-
-                <div class="sub-tab-content" id="da-browse-content">
-                    <h4>上传新文件</h4>
-                    <p>上传您自己的数据文件 (如 .csv) 进行浏览和分析 (最大 10 MB)。</p>
-                    <div class="form-group"><label for="upload-data-file">选择文件:</label><input type="file" id="upload-data-file" accept=".csv"></div>
-                    <button type="button" id="upload-btn">上传文件</button>
-                    <hr style="margin: 20px 0;">
-                    <h4>已上传文件</h4>
-                    <div id="user-files-container">
-                        <ul id="user-files-list"></ul>
-                        <p id="no-files-msg" style="display: none;">您还没��上传任何文件。</p>
-                    </div>
-                </div>
-
-                <div id="data-analysis-results">
-                    <h4 id="results-header"></h4>
-                    <div class="pagination-container" id="pagination-top"></div>
-                    <div class="data-table-container"><table class="data-table" id="data-analysis-table"><thead></thead><tbody></tbody></table></div>
-                    <div class="pagination-container" id="pagination-bottom"></div>
+            <div class="sub-tab-content" id="da-browse-content">
+                <h4>上传新文件</h4>
+                <p>上传您自己的数据文件 (如 .csv) 进行浏览和分析 (最大 10 MB)。</p>
+                <div class="form-group"><label for="upload-data-file">选择文件:</label><input type="file" id="upload-data-file" accept=".csv"></div>
+                <button type="button" id="upload-btn">上传文件</button>
+                <hr style="margin: 20px 0;">
+                <h4>已上传文件</h4>
+                <div id="user-files-container">
+                    <ul id="user-files-list"></ul>
+                    <p id="no-files-msg" style="display: none;">您还没有上传任何文件。</p>
                 </div>
             </div>
 
-            <div id="backtest-common-form">
-                <hr style="margin-top: 20px; margin-bottom: 20px;">
-                <div class="form-group"><label for="benchmark-symbol">基准指数 (可选):</label><select id="benchmark-symbol" name="benchmark_symbol"><option value="">无</option><option value="000300">沪深300</option><option value="000001">上证指数</option></select></div>
-                <div class="form-group"><label for="params">策略参数 (JSON, 可选):</label><textarea id="params" name="params" rows="4" placeholder='{"fast_period": 10, "slow_period": 30}'></textarea></div>
-                <button type="submit">运行回测</button>
-                <div id="form-error" class="error"></div>
+            <div id="data-analysis-results">
+                <h4 id="results-header"></h4>
+                <div class="pagination-container" id="pagination-top"></div>
+                <div class="data-table-container"><table class="data-table" id="data-analysis-table"><thead></thead><tbody></tbody></table></div>
+                <div class="pagination-container" id="pagination-bottom"></div>
             </div>
-        </form>
+        </div>
+
+        <div class="tab-content" id="llm-chat-tab">
+            <h3>AI 数据分析助手</h3>
+            <div class="chat-container" id="chat-container">
+                <!-- Chat messages will be appended here -->
+            </div>
+            <div class="chat-input-container">
+                <input type="text" id="chat-input" placeholder="输入你的问题, 例如: '查询平安银行最近10天的日行情数据'">
+                <button id="chat-send-btn">发送</button>
+            </div>
+        </div>
+
+        <div id="backtest-common-form" style="display: none;">
+            <hr style="margin-top: 20px; margin-bottom: 20px;">
+            <div class="form-group"><label for="benchmark-symbol">基准指数 (可选):</label><select id="benchmark-symbol" name="benchmark_symbol"><option value="">无</option><option value="000300">沪深300</option><option value="000001">上证指数</option></select></div>
+            <div class="form-group"><label for="params">策略参数 (JSON, 可选):</label><textarea id="params" name="params" rows="4" placeholder='{"fast_period": 10, "slow_period": 30}'></textarea></div>
+            <button type="submit" id="run-backtest-btn">运行回测</button>
+            <div id="form-error" class="error"></div>
+        </div>
         
         <div id="results" class="results"></div>
     </div>
@@ -163,6 +187,46 @@
             } catch (error) {
                 localStorage.removeItem('accessToken');
                 location.reload();
+            }
+        }
+
+        // --- LLM Chat ---
+        const chatContainer = document.getElementById('chat-container');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+
+        function appendMessage(sender, text, isHtml = false) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', sender);
+            const bubble = document.createElement('div');
+            bubble.classList.add('message-bubble');
+            if (isHtml) {
+                bubble.innerHTML = text;
+            } else {
+                bubble.textContent = text;
+            }
+            messageElement.appendChild(bubble);
+            chatContainer.appendChild(messageElement);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        async function handleSendMessage() {
+            const prompt = chatInput.value.trim();
+            if (!prompt) return;
+            appendMessage('user', prompt);
+            chatInput.value = '';
+            chatSendBtn.disabled = true;
+            chatSendBtn.textContent = '思考中...';
+
+            try {
+                const response = await apiFetch(`/api/llm/chat/completions?prompt=${encodeURIComponent(prompt)}`, { method: 'POST' });
+                const aiResponseHtml = marked.parse(response.response);
+                appendMessage('ai', aiResponseHtml, true);
+            } catch (error) {
+                appendMessage('ai', `Error: ${error.message}`);
+            } finally {
+                chatSendBtn.disabled = false;
+                chatSendBtn.textContent = '发送';
             }
         }
 
@@ -326,8 +390,11 @@
                     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
                     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                     tab.classList.add('active');
-                    document.getElementById(tab.dataset.tab + '-tab').classList.add('active');
-                    document.getElementById('backtest-common-form').style.display = (tab.dataset.tab === 'data-analysis') ? 'none' : 'block';
+                    const tabId = tab.dataset.tab + '-tab';
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    const isBacktestTab = tab.dataset.tab === 'file-upload' || tab.dataset.tab === 'integrated';
+                    document.getElementById('backtest-common-form').style.display = isBacktestTab ? 'block' : 'none';
                 });
             });
             // Data analysis sub-tabs
@@ -343,10 +410,23 @@
                     }
                 });
             });
+
+            // LLM Chat listeners
+            const chatSendBtn = document.getElementById('chat-send-btn');
+            const chatInput = document.getElementById('chat-input');
+            if (chatSendBtn) {
+                chatSendBtn.addEventListener('click', handleSendMessage);
+                chatInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') handleSendMessage();
+                });
+                appendMessage('ai', '你好！我是你的 AI 数据分析助手。你可以问我关于中国市场金融数据的问题。例如: `查询平安银行最近10天的日行情数据`');
+            }
+
             // Other listeners
             document.getElementById('upload-btn').addEventListener('click', handleFileUpload);
+            
             // Load initial data
-            loadInterfaceConfig();
+            // loadInterfaceConfig(); // This function is missing, so I commented it out.
             document.getElementById('file-upload-tab').innerHTML = `...`; // Populate as before
             document.getElementById('integrated-tab').innerHTML = `...`; // Populate as before
         });
