@@ -1,0 +1,28 @@
+{
+  "test_cases": [
+    {
+      "name": "Scenario 1: Query specific stock history",
+      "prompt": "请帮我查询一下贵州茅台（代码600519）从2024年1月1日到2024年1月10日的日线历史数据，需要后复权。"
+    },
+    {
+      "name": "Scenario 2: Get real-time market quotes",
+      "prompt": "现在A股的实时行情怎么样？"
+    },
+    {
+      "name": "Scenario 3: Query market summary",
+      "prompt": "给我一份今天上交所的市场总览报告。"
+    },
+    {
+      "name": "Scenario 4: Query margin trading data",
+      "prompt": "我想知道上证交易所从2024年2月1日到2024年2月5日的融资融券汇总数据。"
+    },
+    {
+      "name": "Scenario 5: Query company announcements",
+      "prompt": "查询一下万科A（000002）在2023年12月份的定期披露报告有哪些？"
+    },
+    {
+      "name": "Scenario 6: Vague/Colloquial query",
+      "prompt": "茅台股价最近怎么样？"
+    }
+  ]
+}
