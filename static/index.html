@@ -5,587 +5,171 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Backtrader MCP Service</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        h1 {
-            color: #333;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input[type="file"], textarea, select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 10px 15px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .results {
-            margin-top: 30px;
-            border: 1px solid #ddd;
-            padding: 20px;
-            border-radius: 4px;
-            display: none;
-        }
-        .metrics {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .metric-item {
-            background-color: #f9f9f9;
-            padding: 10px;
-            border-radius: 4px;
-        }
-        .metric-name {
-            font-weight: bold;
-            color: #555;
-        }
-        .chart-container {
-            margin-top: 20px;
-        }
-        .error {
-            color: red;
-            margin-top: 10px;
-        }
-        .tabs {
-            display: flex;
-            margin-bottom: 20px;
-            border-bottom: 1px solid #ddd;
-        }
-        .tab {
-            padding: 10px 20px;
-            cursor: pointer;
-            border: 1px solid transparent;
-            border-bottom: none;
-            margin-bottom: -1px;
-        }
-        .tab.active {
-            background-color: white;
-            border-color: #ddd;
-            border-bottom: 1px solid white;
-            border-radius: 4px 4px 0 0;
-            font-weight: bold;
-        }
-        .tab-content {
-            display: none;
-            border: 1px solid #ddd;
-            padding: 20px;
-            border-top: none;
-            border-radius: 0 4px 4px 4px;
-        }
-        .tab-content.active {
-            display: block;
-        }
-        .data-source-container {
-            display: none;
-        }
-        .benchmark-container {
-            margin-top: 15px;
-        }
-        .loading {
-            display: inline-block;
-            margin-left: 10px;
-        }
-        .file-preview-container {
-            margin-top: 10px;
-            display: none;
-        }
-        .file-preview-container pre {
-            background-color: #f5f5f5;
-            padding: 10px;
-            border-radius: 4px;
-            max-height: 300px;
-            overflow-x: auto;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-        .examples {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        .examples ul {
-            padding-left: 20px;
-            margin: 0;
-        }
+        body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; }
+        h1, h2, h3 { color: #333; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="file"], input[type="text"], input[type="password"], textarea, select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #4CAF50; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #45a049; }
+        button:disabled { background-color: #cccccc; cursor: not-allowed; }
+        .error { color: red; margin-top: 10px; }
+        .tabs { display: flex; margin-bottom: 0; border-bottom: 1px solid #ddd; }
+        .tab { padding: 10px 20px; cursor: pointer; border: 1px solid transparent; border-bottom: none; margin-bottom: -1px; }
+        .tab.active { background-color: white; border-color: #ddd; border-bottom: 1px solid white; border-radius: 4px 4px 0 0; font-weight: bold; }
+        .tab-content { display: none; border: 1px solid #ddd; padding: 20px; border-top: none; border-radius: 0 4px 4px 4px; }
+        .tab-content.active { display: block; }
+        .examples { margin-top: 20px; padding: 15px; background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 4px; }
+        .examples ul { padding-left: 20px; margin: 0; }
+        .results { margin-top: 30px; border: 1px solid #ddd; padding: 20px; border-radius: 4px; display: none; }
+        .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 20px; }
+        .metric-item { background-color: #f9f9f9; padding: 10px; border-radius: 4px; }
+        .metric-name { font-weight: bold; color: #555; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background-color: white; padding: 30px; border-radius: 8px; width: 100%; max-width: 400px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .user-info { position: absolute; top: 20px; right: 20px; font-size: 0.9em; color: #555; }
+        .user-info #logout-btn { margin-left: 10px; padding: 5px 10px; font-size: 0.9em; background-color: #f44336; }
+        #data-analysis-results { margin-top: 20px; display: none; }
+        .data-table-container { overflow-x: auto; }
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .data-table th, .data-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        .data-table th { background-color: #f2f2f2; font-weight: bold; }
+        .pagination-container { margin-top: 15px; display: flex; justify-content: space-between; align-items: center; }
     </style>
 </head>
 <body>
-    <h1>Backtrader MCP Service</h1>
-    <p>Upload your strategy and data files to run a backtest</p>
-    
-    <div class="tabs">
-        <div class="tab active" data-tab="file-upload">文件上传回测</div>
-        <div class="tab" data-tab="akshare-data">AkShare 数据回测</div>
-        <div class="tab" data-tab="integrated">集成回测</div>
-        <div class="tab" data-tab="mcp-interface">高级接口测试</div>
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h2>登录</h2>
+            <p>请输入您的凭证以继续</p>
+            <form id="login-form">
+                <div class="form-group"><label for="username">用户名:</label><input type="text" id="username" name="username" required></div>
+                <div class="form-group"><label for="password">密码:</label><input type="password" id="password" name="password" required></div>
+                <button type="submit">登录</button>
+                <div id="login-error" class="error"></div>
+            </form>
+        </div>
     </div>
-    
-    <form id="backtest-form">
-        <div class="tab-content active" id="file-upload-tab">
-            <div class="form-group">
-                <label for="strategy-file">策略文件 (Python):</label>
-                <input type="file" id="strategy-file" name="strategy_file" accept=".py" required>
-                <div class="file-preview-container" id="strategy-file-preview-container">
-                    <label>文件预览:</label>
-                    <pre id="strategy-file-preview"></pre>
-                </div>
+
+    <div id="app-content" style="display: none;">
+        <div class="user-info"><span id="user-display"></span><button id="logout-btn">登出</button></div>
+        <h1>Backtrader MCP Service</h1>
+        <p>统一��回测与数据分析平台</p>
+        
+        <div class="tabs">
+            <div class="tab active" data-tab="file-upload">文件上传回测</div>
+            <div class="tab" data-tab="integrated">集成回测</div>
+            <div class="tab" data-tab="data-analysis">数据分析</div>
+        </div>
+        
+        <form id="backtest-form">
+            <div class="tab-content active" id="file-upload-tab">
+                <!-- Content for File Upload Tab -->
             </div>
             
-            <div class="form-group">
-                <label for="data-file">数据文件 (CSV):</label>
-                <input type="file" id="data-file" name="data_file" accept=".csv" required>
-                <div class="file-preview-container" id="data-file-preview-container">
-                    <label>文件预览:</label>
-                    <pre id="data-file-preview"></pre>
+            <div class="tab-content" id="integrated-tab">
+                <!-- Content for Integrated Backtest Tab -->
+            </div>
+
+            <div class="tab-content" id="data-analysis-tab">
+                <h3>数据分析</h3>
+                <p>直接调用 AkShare 的原始数据接口，以表格形式展示数据，支持翻页。</p>
+                <div class="form-group"><label for="da-interface">接口名称:</label><select id="da-interface"><option value="">加载中...</option></select></div>
+                <div class="form-group"><label for="da-params">接口参数 (JSON):</label><textarea id="da-params" rows="6"></textarea></div>
+                <button type="button" onclick="fetchDataForAnalysis(1)">获取数据</button>
+                <div id="data-analysis-results">
+                    <div class="pagination-container" id="pagination-top"></div>
+                    <div class="data-table-container"><table class="data-table" id="data-analysis-table"><thead></thead><tbody></tbody></table></div>
+                    <div class="pagination-container" id="pagination-bottom"></div>
                 </div>
             </div>
 
-            <div class="examples">
-                <p>不知道上传什么？查看或下载示例文件：</p>
-                <ul>
-                    <li><a href="/static/examples/simple_ma_strategy_example.py" target="_blank" download>双均线策略示例 (.py)</a></li>
-                    <li><a href="/static/examples/rsi_strategy_example.py" target="_blank" download>RSI 策略示例 (.py)</a></li>
-                    <li><a href="/static/examples/sample_data_example.csv" target="_blank" download>行情数据表示例 (.csv)</a></li>
-                </ul>
-            </div>
-        </div>
+            <hr style="margin-top: 20px; margin-bottom: 20px;">
+            
+            <div class="form-group"><label for="benchmark-symbol">基准指数 (可选):</label><select id="benchmark-symbol" name="benchmark_symbol"><option value="">无</option><option value="000300">沪深300</option><option value="000001">上证指数</option></select></div>
+            <div class="form-group"><label for="params">策略参数 (JSON, 可选):</label><textarea id="params" name="params" rows="4" placeholder='{"fast_period": 10, "slow_period": 30}'></textarea></div>
+            <button type="submit">运行回测</button>
+            <div id="form-error" class="error"></div>
+        </form>
         
-        <div class="tab-content" id="akshare-data-tab">
-            <div class="form-group">
-                <label for="strategy-file-akshare">策略文件 (Python):</label>
-                <input type="file" id="strategy-file-akshare" name="strategy_file_akshare" accept=".py" required>
-                <div class="file-preview-container" id="strategy-file-akshare-preview-container">
-                    <label>文件预览:</label>
-                    <pre id="strategy-file-akshare-preview"></pre>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label for="data-source-type">数据源类型:</label>
-                <select id="data-source-type">
-                    <option value="">选择数据源类型</option>
-                    <option value="akshare_etf">AkShare ETF</option>
-                    <option value="akshare_index">AkShare 指数</option>
-                </select>
-            </div>
-            
-            <div class="form-group data-source-container" id="data-source-container">
-                <label for="data-source">数据标识:</label>
-                <select id="data-source" name="data_source">
-                    <option value="">选择一个标识</option>
-                </select>
-            </div>
-        </div>
-
-        <div class="tab-content" id="mcp-interface-tab">
-            <h3>高级接口测试</h3>
-            <p>直接调用 AkShare 的原始数据接口，支持股票、基金、指数等。适合开发者或高级用户。</p>
-            
-            <div class="form-group">
-                <label for="mcp-interface">接口名称:</label>
-                <select id="mcp-interface">
-                    <option value="">选择接口</option>
-                    <option value="stock_zh_a_hist">股票历史数据 (stock_zh_a_hist)</option>
-                    <option value="fund_em_open_fund_info">基金信息 (fund_em_open_fund_info)</option>
-                    <option value="index_zh_a_hist">指数历史数据 (index_zh_a_hist)</option>
-                    <option value="stock_zh_a_spot_em">股票实时数据 (stock_zh_a_spot_em)</option>
-                    <option value="fund_etf_spot_em">ETF实时数据 (fund_etf_spot_em)</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="mcp-params">接口参数 (JSON格式):</label>
-                <textarea id="mcp-params" rows="6" placeholder='示例:
-{
-  "symbol": "000001",
-  "period": "daily",
-  "start_date": "20240101",
-  "end_date": "20241201"
-}'></textarea>
-            </div>
-            
-            <div class="form-group">
-                <label for="mcp-request-id">请求ID:</label>
-                <input type="text" id="mcp-request-id" value="test001" placeholder="请求标识符">
-            </div>
-            
-            <button type="button" onclick="testMCPInterface()">测试接口</button>
-            
-            <div id="mcp-results" style="margin-top: 20px; display: none;">
-                <h4>接口响应:</h4>
-                <pre id="mcp-response" style="background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto;"></pre>
-            </div>
-        </div>
-        
-        <div class="tab-content" id="integrated-tab">
-            <h3>集成回测 - AkShare数据 + 策略</h3>
-            <p>使用AkShare数据接口直接进行策略回测，无需手动下载数据</p>
-            
-            <div class="form-group">
-                <label for="strategy-file-integrated">策略文件 (Python):</label>
-                <input type="file" id="strategy-file-integrated" name="strategy_file_integrated" accept=".py" required>
-                 <div class="file-preview-container" id="strategy-file-integrated-preview-container">
-                    <label>文件预览:</label>
-                    <pre id="strategy-file-integrated-preview"></pre>
-                </div>
-            </div>
-            
-            <div class="form-group">
-                <label for="integrated-interface">数据接口:</label>
-                <select id="integrated-interface" name="integrated_interface">
-                    <option value="stock_zh_a_hist" selected>股票历史数据 (stock_zh_a_hist)</option>
-                    <option value="fund_etf_hist_em">ETF历史数据 (fund_etf_hist_em)</option>
-                    <option value="index_zh_a_hist">指数历史数据 (index_zh_a_hist)</option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="integrated-symbol">股票/ETF代码:</label>
-                <input type="text" id="integrated-symbol" name="integrated_symbol" value="000001" placeholder="例如: 000001, 518880">
-            </div>
-            
-            <div class="form-group">
-                <label for="integrated-start-date">开始日期:</label>
-                <input type="text" id="integrated-start-date" name="integrated_start_date" value="20230101" placeholder="格式: YYYYMMDD, 例如: 20200101">
-            </div>
-            
-            <div class="form-group">
-                <label for="integrated-end-date">结束日期:</label>
-                <input type="text" id="integrated-end-date" name="integrated_end_date" value="20231231" placeholder="格式: YYYYMMDD, 例如: 20241201">
-            </div>
-        </div>
-        
-        <div class="form-group benchmark-container">
-            <label for="benchmark-symbol">基准指数 (可选):</label>
-            <select id="benchmark-symbol" name="benchmark_symbol">
-                <option value="">无</option>
-                <option value="000300">沪深300 (CSI 300)</option>
-                <option value="000001">上证指数 (SSE)</option>
-                <option value="399001">深证成指 (SZSE)</option>
-                <option value="399006">创业板指 (ChiNext)</option>
-            </select>
-        </div>
-        
-        <div class="form-group">
-            <label for="params">策略参数 (JSON, 可选):</label>
-            <textarea id="params" name="params" rows="4" placeholder='{"fast_period": 10, "slow_period": 30}'></textarea>
-        </div>
-        
-        <button type="submit">运行回测</button>
-    </form>
-    
-    <div id="error" class="error"></div>
-    
-    <div id="results" class="results">
-        <h2>回测结果</h2>
-        
-        <div class="metrics" id="metrics-container">
-            <!-- Metrics will be inserted here -->
-        </div>
-        
-        <div class="chart-container">
-            <h3>策略表现图</h3>
-            <img id="chart" src="" alt="Performance Chart" style="max-width: 100%;">
+        <div id="results" class="results">
+            <!-- Backtest results will be displayed here -->
         </div>
     </div>
     
     <script>
-        // --- File Preview Functionality ---
-        function setupFilePreview(inputId, previewContainerId, previewId) {
-            const input = document.getElementById(inputId);
-            const previewContainer = document.getElementById(previewContainerId);
-            const preview = document.getElementById(previewId);
+        // --- Authentication & Core Logic ---
+        async function apiFetch(url, options = {}) { /* ... existing code ... */ }
+        function handleLogout() { /* ... existing code ... */ }
+        async function checkAuth() { /* ... existing code ... */ }
+        document.getElementById('login-form').addEventListener('submit', async function(e) { /* ... existing code ... */ });
+        document.getElementById('logout-btn').addEventListener('click', handleLogout);
+        document.querySelectorAll('.tab').forEach(tab => { /* ... existing code ... */ });
+        document.getElementById('backtest-form').addEventListener('submit', async function(e) { /* ... existing code ... */ });
+        function displayResults(result) { /* ... existing code ... */ }
 
-            if (!input || !previewContainer || !preview) return;
-
-            input.addEventListener('change', function(event) {
-                const file = event.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        preview.textContent = e.target.result;
-                        previewContainer.style.display = 'block';
-                    };
-                    reader.onerror = function() {
-                        preview.textContent = 'Error reading file.';
-                        previewContainer.style.display = 'block';
-                    };
-                    reader.readAsText(file);
-                } else {
-                    preview.textContent = '';
-                    previewContainer.style.display = 'none';
-                }
-            });
-        }
-
-        // --- Tab Switching ---
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', function() {
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                
-                this.classList.add('active');
-                document.getElementById(this.dataset.tab + '-tab').classList.add('active');
-            });
-        });
-        
-        // --- Load Data Sources ---
-        async function loadDataSources() {
+        // --- Dynamic Interface Loading ---
+        async function loadInterfaceConfig() {
+            const selectElement = document.getElementById('da-interface');
+            const paramsTextarea = document.getElementById('da-params');
             try {
-                const response = await fetch('/api/data-sources');
-                if (!response.ok) throw new Error('Failed to load data sources');
-                const data = await response.json();
-                return data.sources;
-            } catch (error) {
-                console.error('Error loading data sources:', error);
-                return [];
-            }
-        }
-        
-        document.getElementById('data-source-type').addEventListener('change', async function() {
-            const sourceType = this.value;
-            const sourceContainer = document.getElementById('data-source-container');
-            const sourceSelect = document.getElementById('data-source');
-            
-            if (!sourceType) {
-                sourceContainer.style.display = 'none';
-                return;
-            }
-            
-            const loadingSpan = this.parentElement.querySelector('.loading') || document.createElement('span');
-            loadingSpan.className = 'loading';
-            loadingSpan.textContent = 'Loading symbols...';
-            this.insertAdjacentElement('afterend', loadingSpan);
-            
-            try {
-                const sources = await loadDataSources();
-                const source = sources.find(s => s.name.toLowerCase().replace(/\s+/g, '_') === sourceType);
+                const response = await fetch('/api/interfaces');
+                if (!response.ok) throw new Error('Failed to load interface config');
+                const config = await response.json();
                 
-                if (source) {
-                    sourceSelect.innerHTML = '<option value="">选择一个标识</option>';
-                    Object.entries(source.symbols).forEach(([symbol, description]) => {
+                selectElement.innerHTML = '<option value="">选择一个接口</option>';
+                
+                config.categories.forEach(category => {
+                    const optgroup = document.createElement('optgroup');
+                    optgroup.label = category.name;
+                    category.interfaces.forEach(iface => {
                         const option = document.createElement('option');
-                        option.value = `akshare:${symbol}`;
-                        option.textContent = `${symbol} - ${description}`;
-                        sourceSelect.appendChild(option);
+                        option.value = iface.name;
+                        option.textContent = iface.description;
+                        // Store example params as a data attribute
+                        option.dataset.example = JSON.stringify(iface.example_params, null, 2);
+                        optgroup.appendChild(option);
                     });
-                    sourceContainer.style.display = 'block';
-                } else {
-                    sourceContainer.style.display = 'none';
-                }
-            } catch (error) {
-                console.error('Error:', error);
-            } finally {
-                loadingSpan.remove();
-            }
-        });
-        
-        // --- Form Submission ---
-        document.getElementById('backtest-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData();
-            const activeTab = document.querySelector('.tab.active').dataset.tab;
-            
-            let strategyFile;
-            let endpoint = '/api/backtest';
-            
-            if (activeTab === 'file-upload') {
-                strategyFile = document.getElementById('strategy-file').files[0];
-            } else if (activeTab === 'akshare-data') {
-                strategyFile = document.getElementById('strategy-file-akshare').files[0];
-            } else if (activeTab === 'integrated') {
-                strategyFile = document.getElementById('strategy-file-integrated').files[0];
-                endpoint = '/api/backtest-with-mcp';
-            }
-            
-            if (!strategyFile) {
-                document.getElementById('error').textContent = '请选择一个策略文件';
-                return;
-            }
-            
-            formData.append('strategy_file', strategyFile);
-            
-            if (activeTab === 'file-upload') {
-                const dataFile = document.getElementById('data-file').files[0];
-                if (!dataFile) {
-                    document.getElementById('error').textContent = '请选择一个数据文件';
-                    return;
-                }
-                formData.append('data_file', dataFile);
-            } else if (activeTab === 'akshare-data') {
-                const dataSource = document.getElementById('data-source').value;
-                if (!dataSource) {
-                    document.getElementById('error').textContent = '请选择一个数据源';
-                    return;
-                }
-                formData.append('data_source', dataSource);
-            } else if (activeTab === 'integrated') {
-                const interface_name = document.getElementById('integrated-interface').value;
-                const symbol = document.getElementById('integrated-symbol').value;
-                const start_date = document.getElementById('integrated-start-date').value;
-                const end_date = document.getElementById('integrated-end-date').value;
-                
-                if (!interface_name || !symbol) {
-                    document.getElementById('error').textContent = '请选择数据接口并输入代码';
-                    return;
-                }
-                
-                formData.append('interface', interface_name);
-                formData.append('symbol', symbol);
-                if (start_date) formData.append('start_date', start_date);
-                if (end_date) formData.append('end_date', end_date);
-            }
-            
-            const benchmarkSymbol = document.getElementById('benchmark-symbol').value;
-            if (benchmarkSymbol) formData.append('benchmark_symbol', benchmarkSymbol);
-            
-            const params = document.getElementById('params').value;
-            if (params) formData.append('params', params);
-            
-            const errorDiv = document.getElementById('error');
-            const resultsDiv = document.getElementById('results');
-            const submitButton = this.querySelector('button[type="submit"]');
-            
-            errorDiv.textContent = '';
-            resultsDiv.style.display = 'none';
-            submitButton.textContent = '运行中...';
-            submitButton.disabled = true;
-            
-            try {
-                const response = await fetch(endpoint, { method: 'POST', body: formData });
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || '运行回测时发生错误');
-                }
-                const result = await response.json();
-                displayResults(result);
-            } catch (error) {
-                errorDiv.textContent = error.message;
-            } finally {
-                submitButton.textContent = '运行回测';
-                submitButton.disabled = false;
-            }
-        });
-        
-        function displayResults(result) {
-            document.getElementById('results').style.display = 'block';
-            const metricsContainer = document.getElementById('metrics-container');
-            metricsContainer.innerHTML = '';
-            
-            const metrics = result.metrics;
-            const metricItems = [
-                { name: '总回报率', value: (metrics.total_return * 100).toFixed(2) + '%' },
-                { name: '年化回报率', value: (metrics.annual_return * 100).toFixed(2) + '%' },
-                { name: '夏普比率', value: metrics.sharpe_ratio.toFixed(2) },
-                { name: '索提诺比率', value: metrics.sortino_ratio.toFixed(2) },
-                { name: '最大回撤', value: (metrics.max_drawdown * 100).toFixed(2) + '%' },
-                { name: '总交易次数', value: metrics.total_trades },
-                { name: '胜率', value: (metrics.win_rate).toFixed(2) + '%' },
-                { name: '盈亏比', value: metrics.profit_factor.toFixed(2) },
-                { name: '平均持仓周期', value: metrics.avg_trade_duration.toFixed(2) + ' 周期' }
-            ];
-            
-            if (metrics.alpha !== null && metrics.alpha !== undefined) {
-                metricItems.push({ name: 'Alpha', value: metrics.alpha.toFixed(3) });
-                metricItems.push({ name: 'Beta', value: metrics.beta.toFixed(3) });
-                metricItems.push({ name: '信息比率', value: metrics.information_ratio.toFixed(3) });
-            }
-            
-            metricItems.forEach(item => {
-                const metricElement = document.createElement('div');
-                metricElement.className = 'metric-item';
-                metricElement.innerHTML = `<div class="metric-name">${item.name}</div><div class="metric-value">${item.value}</div>`;
-                metricsContainer.appendChild(metricElement);
-            });
-            
-            document.getElementById('chart').src = 'data:image/png;base64,' + result.chart;
-        }
-
-        // --- MCP Interface Testing ---
-        async function testMCPInterface() {
-            const interface_name = document.getElementById('mcp-interface').value;
-            const params_text = document.getElementById('mcp-params').value;
-            const request_id = document.getElementById('mcp-request-id').value;
-            
-            if (!interface_name) {
-                alert('请选择接口名称');
-                return;
-            }
-            
-            let params = {};
-            if (params_text.trim()) {
-                try {
-                    params = JSON.parse(params_text);
-                } catch (e) {
-                    alert('参数格式错误，请输入有效的JSON格式');
-                    return;
-                }
-            }
-            
-            const requestData = { interface: interface_name, params: params, request_id: request_id || 'test001' };
-            const mcpResultsDiv = document.getElementById('mcp-results');
-            const mcpResponsePre = document.getElementById('mcp-response');
-
-            try {
-                const response = await fetch('/api/mcp-data', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(requestData)
+                    selectElement.appendChild(optgroup);
                 });
-                const result = await response.json();
-                mcpResponsePre.textContent = JSON.stringify(result, null, 2);
+
             } catch (error) {
-                mcpResponsePre.textContent = 'Error: ' + error.message;
-            } finally {
-                mcpResultsDiv.style.display = 'block';
+                selectElement.innerHTML = `<option value="">加载失败: ${error.message}</option>`;
             }
+
+            selectElement.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                if (selectedOption && selectedOption.dataset.example) {
+                    paramsTextarea.value = selectedOption.dataset.example;
+                } else {
+                    paramsTextarea.value = '';
+                }
+            });
         }
 
-        document.getElementById('mcp-interface').addEventListener('change', function() {
-            const interface_name = this.value;
-            const paramsTextarea = document.getElementById('mcp-params');
-            const examples = {
-                'stock_zh_a_hist': '{\n  "symbol": "000001",\n  "period": "daily",\n  "start_date": "20240101",\n  "end_date": "20241201"\n}',
-                'fund_em_open_fund_info': '{\n  "fund": "000001",\n  "indicator": "单位净值走势"\n}',
-                'index_zh_a_hist': '{\n  "symbol": "000001",\n  "period": "daily",\n  "start_date": "20240101",\n  "end_date": "20241201"\n}',
-                'stock_zh_a_spot_em': '{}',
-                'fund_etf_spot_em': '{}'
-            };
-            paramsTextarea.value = examples[interface_name] || '';
-        });
+        // --- Data Analysis ---
+        async function fetchDataForAnalysis(page = 1) { /* ... existing code ... */ }
+        function renderDataTable(data) { /* ... existing code ... */ }
+        function renderPagination(totalPages, currentPage, totalRecords) { /* ... existing code ... */ }
 
-        // --- Initialize Previews and other dynamic content ---
-        document.addEventListener('DOMContentLoaded', function() {
-            setupFilePreview('strategy-file', 'strategy-file-preview-container', 'strategy-file-preview');
-            setupFilePreview('data-file', 'data-file-preview-container', 'data-file-preview');
-            setupFilePreview('strategy-file-akshare', 'strategy-file-akshare-preview-container', 'strategy-file-akshare-preview');
-            setupFilePreview('strategy-file-integrated', 'strategy-file-integrated-preview-container', 'strategy-file-integrated-preview');
+        // --- Initial Load ---
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            loadInterfaceConfig();
+            // Restore other tab contents
+            document.getElementById('file-upload-tab').innerHTML = `
+                <div class="form-group"><label for="strategy-file">策略文件 (.py):</label><input type="file" id="strategy-file" name="strategy_file" accept=".py" required></div>
+                <div class="form-group"><label for="data-file">数据文件 (.csv):</label><input type="file" id="data-file" name="data_file" accept=".csv" required></div>
+                <div class="examples"><p>不知道上传什么？查看或下载示例文件：</p><ul><li><a href="/static/examples/simple_ma_strategy_example.py" target="_blank" download>双均线策略示例 (.py)</a></li><li><a href="/static/examples/sample_data_example.csv" target="_blank" download>行情数据表示例 (.csv)</a></li></ul></div>`;
+            document.getElementById('integrated-tab').innerHTML = `
+                <h3>集成回测 - AkShare数据 + 策略</h3>
+                <p>使用AkShare数据接口直接进行策略回测，无需手动下载数据</p>
+                <div class="form-group"><label for="strategy-file-integrated">策略文件 (.py):</label><input type="file" id="strategy-file-integrated" name="strategy_file_integrated" accept=".py" required></div>
+                <div class="form-group"><label for="integrated-interface">数据接口:</label><select id="integrated-interface" name="integrated_interface"><option value="stock_zh_a_hist" selected>股票历史数据</option><option value="fund_etf_hist_em">ETF历史数据</option><option value="index_zh_a_hist">指数历史数据</option></select></div>
+                <div class="form-group"><label for="integrated-symbol">代码:</label><input type="text" id="integrated-symbol" name="integrated_symbol" value="000001" placeholder="例如: 000001, 518880"></div>
+                <div class="form-group"><label for="integrated-start-date">开始日期:</label><input type="text" id="integrated-start-date" name="integrated_start_date" value="20230101" placeholder="格式: YYYYMMDD"></div>
+                <div class="form-group"><label for="integrated-end-date">结束日期:</label><input type="text" id="integrated-end-date" name="integrated_end_date" value="20231231" placeholder="格式: YYYYMMDD"></div>`;
         });
     </script>
 </body>

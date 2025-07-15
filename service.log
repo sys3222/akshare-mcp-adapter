@@ -73,3 +73,127 @@ ERROR:    [Errno 98] Address already in use
 2025-07-14 14:35:58,227 - mcp-unified-service - INFO - 初始化AkShare缓存目录
 2025-07-14 14:35:58,227 - mcp-unified-service - INFO - 预加载沪深300指数数据: 2020-01-01 ~ 2025-07-14
 2025-07-14 14:36:01,509 - mcp-unified-service - INFO - 沪深300指数数据加载完成
+2025-07-14 15:06:55,512 - mcp-unified-service - INFO - 启动MCP统一服务 - AkShare数据 + 量化回测
+2025-07-14 15:24:31,935 - mcp-unified-service - INFO - 启动MCP统一服务 - AkShare数据 + 量化回测
+2025-07-14 15:25:25,502 - mcp-unified-service - INFO - MCP data request received: stock_zh_a_hist, Params: {'symbol': '000001', 'period': 'daily', 'start_date': '20240101', 'end_date': '20241201'}
+2025-07-15 01:35:39,487 - mcp-unified-service - INFO - 启动MCP统一服务 - AkShare数据 + 量化回测
+2025-07-15 01:45:20,051 - mcp-unified-service - INFO - 启动MCP统一服务 - AkShare数据 + 量化回测
+2025-07-15 02:08:58,345 - mcp-unified-service - INFO - MCP data request received: stock_zh_a_hist, Params: {'symbol': '000001', 'period': 'daily', 'start_date': '20240101', 'end_date': '20241201'}
+2025-07-15 02:24:32,197 - mcp-unified-service - INFO - Service starting up...
+2025-07-15 02:24:32,199 - mcp-unified-service - INFO - Database and tables created successfully.
+2025-07-15 02:24:36,773 - mcp-unified-service - INFO - Service starting up...
+2025-07-15 02:24:36,774 - mcp-unified-service - INFO - Database and tables created successfully.
+2025-07-15 02:24:36,777 - httpx - INFO - HTTP Request: GET http://testserver/api/health "HTTP/1.1 200 OK"
+2025-07-15 02:24:36,779 - passlib.handlers.bcrypt - WARNING - (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "/workspace/.pyenv_mirror/user/current/lib/python3.12/site-packages/passlib/handlers/bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2025-07-15 02:24:41,024 - httpx - INFO - HTTP Request: GET http://testserver/api/users/me "HTTP/1.1 401 Unauthorized"
+2025-07-15 02:24:42,045 - httpx - INFO - HTTP Request: POST http://testserver/api/mcp-data "HTTP/1.1 401 Unauthorized"
+2025-07-15 02:24:43,024 - mcp-unified-service - INFO - Service shutting down...
+2025-07-15 02:24:43,878 - mcp-unified-service - ERROR - Error executing AkShare code: division by zero
+2025-07-15 02:24:43,882 - mcp-unified-service - INFO - Anonymous user initiated MCP request (ID: test1): Interface: test_interface, Params: {'p1': 'v1'}
+2025-07-15 02:24:43,942 - mcp-unified-service - INFO - Anonymous user initiated MCP request (ID: test2): Interface: non_existent_interface, Params: {}
+2025-07-15 02:24:43,943 - mcp-unified-service - WARNING - Unsupported MCP interface called: non_existent_interface
+2025-07-15 02:24:43,945 - mcp-unified-service - INFO - Anonymous user initiated MCP request (ID: test3): Interface: test_interface, Params: {}
+2025-07-15 02:24:43,945 - mcp-unified-service - ERROR - Error processing MCP request for interface 'test_interface': Internal processing error
+2025-07-15 02:25:10,594 - mcp-unified-service - INFO - Service shutting down...
+2025-07-15 02:25:14,397 - mcp-unified-service - INFO - Service starting up...
+2025-07-15 02:25:14,399 - mcp-unified-service - INFO - Database and tables created successfully.
+2025-07-15 02:25:25,231 - mcp-unified-service - INFO - Service shutting down...
+2025-07-15 02:25:29,286 - mcp-unified-service - INFO - Service starting up...
+2025-07-15 02:25:29,287 - mcp-unified-service - INFO - Database and tables created successfully.
+2025-07-15 02:25:43,380 - mcp-unified-service - INFO - Service starting up...
+2025-07-15 02:25:43,382 - mcp-unified-service - INFO - Database and tables created successfully.
+2025-07-15 02:25:43,385 - httpx - INFO - HTTP Request: GET http://testserver/api/health "HTTP/1.1 200 OK"
+2025-07-15 02:25:43,387 - passlib.handlers.bcrypt - WARNING - (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "/workspace/.pyenv_mirror/user/current/lib/python3.12/site-packages/passlib/handlers/bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2025-07-15 02:25:46,564 - httpx - INFO - HTTP Request: GET http://testserver/api/users/me "HTTP/1.1 401 Unauthorized"
+2025-07-15 02:25:47,394 - httpx - INFO - HTTP Request: POST http://testserver/api/mcp-data "HTTP/1.1 401 Unauthorized"
+2025-07-15 02:25:48,243 - mcp-unified-service - INFO - Service shutting down...
+2025-07-15 02:25:49,072 - mcp-unified-service - ERROR - Error executing AkShare code: division by zero
+2025-07-15 02:25:49,075 - mcp-unified-service - INFO - Anonymous user initiated MCP request (ID: test1): Interface: test_interface, Params: {'p1': 'v1'}
+2025-07-15 02:25:49,111 - mcp-unified-service - INFO - Anonymous user initiated MCP request (ID: test2): Interface: non_existent_interface, Params: {}
+2025-07-15 02:25:49,112 - mcp-unified-service - WARNING - Unsupported MCP interface called: non_existent_interface
+2025-07-15 02:25:49,114 - mcp-unified-service - INFO - Anonymous user initiated MCP request (ID: test3): Interface: test_interface, Params: {}
+2025-07-15 02:25:49,114 - mcp-unified-service - ERROR - Error processing MCP request for interface 'test_interface': Internal processing error
+2025-07-15 02:26:12,364 - mcp-unified-service - INFO - Service shutting down...
+2025-07-15 02:26:16,450 - mcp-unified-service - INFO - Service starting up...
+2025-07-15 02:26:16,451 - mcp-unified-service - INFO - Database and tables created successfully.
+2025-07-15 02:26:30,598 - mcp-unified-service - INFO - Service shutting down...
+2025-07-15 02:26:34,632 - mcp-unified-service - INFO - Service starting up...
+2025-07-15 02:26:34,634 - mcp-unified-service - INFO - Database and tables created successfully.
+2025-07-15 02:26:42,729 - mcp-unified-service - INFO - Service starting up...
+2025-07-15 02:26:42,730 - mcp-unified-service - INFO - Database and tables created successfully.
+2025-07-15 02:26:42,733 - httpx - INFO - HTTP Request: GET http://testserver/api/health "HTTP/1.1 200 OK"
+2025-07-15 02:26:42,735 - passlib.handlers.bcrypt - WARNING - (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "/workspace/.pyenv_mirror/user/current/lib/python3.12/site-packages/passlib/handlers/bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2025-07-15 02:26:46,137 - httpx - INFO - HTTP Request: GET http://testserver/api/users/me "HTTP/1.1 401 Unauthorized"
+2025-07-15 02:26:46,982 - httpx - INFO - HTTP Request: POST http://testserver/api/mcp-data "HTTP/1.1 401 Unauthorized"
+2025-07-15 02:26:47,915 - mcp-unified-service - INFO - Service shutting down...
+2025-07-15 02:26:48,749 - mcp-unified-service - ERROR - Error executing AkShare code: division by zero
+2025-07-15 02:26:48,752 - mcp-unified-service - INFO - Anonymous user initiated MCP request (ID: test1): Interface: test_interface, Params: {'p1': 'v1'}
+2025-07-15 02:26:48,756 - mcp-unified-service - INFO - Anonymous user initiated MCP request (ID: test2): Interface: non_existent_interface, Params: {}
+2025-07-15 02:26:48,756 - mcp-unified-service - WARNING - Unsupported MCP interface called: non_existent_interface
+2025-07-15 02:26:48,758 - mcp-unified-service - INFO - Anonymous user initiated MCP request (ID: test3): Interface: test_interface, Params: {}
+2025-07-15 02:26:48,758 - mcp-unified-service - ERROR - Error processing MCP request for interface 'test_interface': Internal processing error
+2025-07-15 02:27:52,586 - mcp-unified-service - INFO - Service shutting down...
+2025-07-15 02:27:56,118 - mcp-unified-service - INFO - Service starting up...
+2025-07-15 02:27:56,120 - mcp-unified-service - INFO - Database and tables created successfully.
+2025-07-15 02:28:03,844 - mcp-unified-service - INFO - Service shutting down...
+2025-07-15 02:28:07,643 - mcp-unified-service - INFO - Service starting up...
+2025-07-15 02:28:07,645 - mcp-unified-service - INFO - Database and tables created successfully.
+2025-07-15 02:28:16,489 - mcp-unified-service - INFO - Service starting up...
+2025-07-15 02:28:16,491 - mcp-unified-service - INFO - Database and tables created successfully.
+2025-07-15 02:28:16,495 - httpx - INFO - HTTP Request: GET http://testserver/api/health "HTTP/1.1 200 OK"
+2025-07-15 02:28:16,498 - passlib.handlers.bcrypt - WARNING - (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "/workspace/.pyenv_mirror/user/current/lib/python3.12/site-packages/passlib/handlers/bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2025-07-15 02:28:19,833 - httpx - INFO - HTTP Request: GET http://testserver/api/users/me "HTTP/1.1 401 Unauthorized"
+2025-07-15 02:28:20,931 - httpx - INFO - HTTP Request: POST http://testserver/api/mcp-data "HTTP/1.1 401 Unauthorized"
+2025-07-15 02:28:22,144 - mcp-unified-service - INFO - Service shutting down...
+2025-07-15 02:28:22,995 - mcp-unified-service - INFO - Anonymous user initiated MCP request (ID: test1): Interface: test_interface, Params: {'p1': 'v1'}
+2025-07-15 02:28:23,000 - mcp-unified-service - INFO - Anonymous user initiated MCP request (ID: test2): Interface: non_existent_interface, Params: {}
+2025-07-15 02:28:23,000 - mcp-unified-service - WARNING - Unsupported MCP interface called: non_existent_interface
+2025-07-15 02:28:23,002 - mcp-unified-service - INFO - Anonymous user initiated MCP request (ID: test3): Interface: test_interface, Params: {}
+2025-07-15 02:28:23,003 - mcp-unified-service - ERROR - Error processing MCP request for interface 'test_interface': Internal processing error
+2025-07-15 02:31:54,680 - mcp-unified-service - INFO - Service shutting down...
+2025-07-15 02:31:58,531 - mcp-unified-service - INFO - Service starting up...
+2025-07-15 02:31:58,533 - mcp-unified-service - INFO - Database and tables created successfully.
+2025-07-15 02:32:04,351 - mcp-unified-service - INFO - Service shutting down...
+2025-07-15 02:32:08,301 - mcp-unified-service - INFO - Service starting up...
+2025-07-15 02:32:08,302 - mcp-unified-service - INFO - Database and tables created successfully.
+2025-07-15 02:32:39,502 - mcp-unified-service - INFO - Service starting up...
+2025-07-15 02:32:39,504 - mcp-unified-service - INFO - Database and tables created successfully.
+2025-07-15 02:32:39,505 - mcp-unified-service - INFO - Service shutting down...
+2025-07-15 02:33:13,582 - passlib.handlers.bcrypt - WARNING - (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "/workspace/.pyenv_mirror/user/current/lib/python3.12/site-packages/passlib/handlers/bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2025-07-15 02:39:58,172 - mcp-unified-service - INFO - Service shutting down...
+2025-07-15 02:40:02,054 - mcp-unified-service - INFO - Service starting up...
+2025-07-15 02:40:02,056 - mcp-unified-service - INFO - Database and tables created successfully.
+2025-07-15 02:41:02,961 - mcp-unified-service - INFO - Service shutting down...
+2025-07-15 02:41:12,268 - mcp-unified-service - INFO - 启动MCP统一服务 - AkShare数据 + 量化回测
+2025-07-15 02:41:16,222 - mcp-unified-service - INFO - Service starting up...
+2025-07-15 02:41:16,224 - mcp-unified-service - INFO - Database and tables created successfully.
+2025-07-15 02:42:17,765 - mcp-unified-service - INFO - Service starting up...
+2025-07-15 02:42:17,767 - mcp-unified-service - INFO - Database and tables created successfully.
+2025-07-15 02:46:03,110 - mcp-unified-service - INFO - Service shutting down...
+2025-07-15 02:46:37,706 - mcp-unified-service - INFO - Service starting up...
+2025-07-15 02:46:37,708 - mcp-unified-service - INFO - Database and tables created successfully.

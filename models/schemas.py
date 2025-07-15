@@ -1,6 +1,26 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any, Union
 
+# --- User Schemas ---
+class UserBase(BaseModel):
+    username: str
+
+class UserCreate(UserBase):
+    password: str
+
+class UserInDB(UserBase):
+    id: int
+    hashed_password: str
+
+    class Config:
+        orm_mode = True
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+# --- Existing Schemas ---
+
 class AkShareCodeRequest(BaseModel):
     """Request to execute AkShare code"""
     code: str = Field(..., description="AkShare code to execute")
@@ -44,3 +64,12 @@ class DataSourceInfo(BaseModel):
 class DataSourceList(BaseModel):
     """List of available data sources"""
     sources: List[DataSourceInfo] = Field(..., description="Available data sources")
+
+class PaginatedDataResponse(BaseModel):
+    """A paginated response for any list of data."""
+    data: List[Dict[str, Any]] = Field(..., description="The data for the current page.")
+    total_records: int = Field(..., description="Total number of records available.")
+    current_page: int = Field(..., description="The current page number.")
+    total_pages: int = Field(..., description="Total number of pages.")
+    request_id: Optional[str] = Field(None, description="Optional request identifier.")
+    error: Optional[str] = Field(None, description="Error message if the request failed.")

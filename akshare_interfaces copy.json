@@ -1,0 +1,249 @@
+{
+  "categories": [
+    {
+      "name": "行情数据",
+      "description": "获取实时和历史行情数据",
+      "interfaces": [
+        {
+          "name": "stock_zh_a_hist",
+          "description": "A股历史行情（按日/周/月）",
+          "example_params": { "symbol": "600519", "period": "daily", "start_date": "20230101", "end_date": "20231231" }
+        },
+        {
+          "name": "stock_zh_a_spot_em",
+          "description": "A股实时行情",
+          "example_params": {}
+        },
+        {
+          "name": "fund_etf_hist_em",
+          "description": "ETF 基金历史行情",
+          "example_params": { "symbol": "510300", "period": "daily", "start_date": "20230101", "end_date": "20231231" }
+        },
+        {
+          "name": "index_zh_a_hist",
+          "description": "A股指数历史行情",
+          "example_params": { "symbol": "000300", "period": "daily", "start_date": "20230101", "end_date": "20231231" }
+        },
+        {
+          "name": "stock_zh_kcb_spot",
+          "description": "科创板实时行情（新浪财经）",
+          "example_params": {}
+        },
+        {
+          "name": "stock_zh_kcb_daily",
+          "description": "科创板历史行情（新浪财经）",
+          "example_params": { "symbol": "sh688399", "adjust": "hfq" }
+        },
+        {
+          "name": "stock_zh_b_spot",
+          "description": "B 股实时行情（新浪财经）",
+          "example_params": {}
+        }
+      ]
+    },
+    {
+      "name": "市场总貌",
+      "description": "交易所市场整体状况",
+      "interfaces": [
+        {
+          "name": "stock_sse_summary",
+          "description": "上海证券交易所–股票市场总貌",
+          "example_params": {}
+        },
+        {
+          "name": "stock_szse_summary",
+          "description": "深圳证券交易所–证券类别统计",
+          "example_params": { "date": "20200619" }
+        },
+        {
+          "name": "stock_szse_area_summary",
+          "description": "深圳交易所–地区交易排序",
+          "example_params": { "date": "202203" }
+        },
+        {
+          "name": "stock_sse_deal_daily",
+          "description": "上海交易所–每日成交概况",
+          "example_params": { "date": "20250221" }
+        }
+      ]
+    },
+    {
+      "name": "财务与估值",
+      "description": "公司的财务报告、估值指标等",
+      "interfaces": [
+        {
+          "name": "stock_yjbb_em",
+          "description": "A股业绩报表",
+          "example_params": { "date": "20231231" }
+        },
+        {
+          "name": "stock_a_pe_and_pb_em",
+          "description": "A股整体 PE/PB（等权）",
+          "example_params": { "symbol": "sh" }
+        },
+        {
+          "name": "stock_individual_valuation_em",
+          "description": "个股估值指标",
+          "example_params": { "symbol": "sh600000", "period": "每股" }
+        }
+      ]
+    },
+    {
+      "name": "股东与高管",
+      "description": "股东人数、高管持股等信息",
+      "interfaces": [
+        {
+          "name": "stock_ggcg_em",
+          "description": "高管持股情况",
+          "example_params": { "symbol": "全部" }
+        },
+        {
+          "name": "stock_holder_number_em",
+          "description": "股东人数统计",
+          "example_params": { "symbol": "sh600000" }
+        }
+      ]
+    },
+    {
+      "name": "基金数据",
+      "description": "公募基金、ETF 等相关数据",
+      "interfaces": [
+        {
+          "name": "fund_em_open_fund_info",
+          "description": "开放式基金基础信息与净值走势",
+          "example_params": { "fund": "000001", "indicator": "单位净值走势" }
+        },
+        {
+          "name": "fund_etf_spot_em",
+          "description": "ETF 实时行情",
+          "example_params": {}
+        }
+      ]
+    },
+    {
+      "name": "沪港通汇率",
+      "description": "沪港通结算及参考汇率",
+      "interfaces": [
+        {
+          "name": "stock_sgt_settlement_exchange_rate_sse",
+          "description": "沪港通结算汇率（交易所数据）",
+          "example_params": {}
+        },
+        {
+          "name": "stock_sgt_reference_exchange_rate_sse",
+          "description": "沪港通参考汇率",
+          "example_params": {}
+        }
+      ]
+    },
+    {
+      "name": "信息披露",
+      "description": "巨潮资讯–公告披露相关接口",
+      "interfaces": [
+        {
+          "name": "stock_report_disclosure",
+          "description": "预约披露时间数据",
+          "example_params": { "market": "沪深京", "period": "2021年报" }
+        },
+        {
+          "name": "stock_zh_a_disclosure_report_cninfo",
+          "description": "信息披露公告（年报、中报等）",
+          "example_params": { "symbol": "000001", "market": "沪深京", "category": "公司治理", "start_date": "20230619", "end_date": "20231220" }
+        },
+        {
+          "name": "stock_zh_a_disclosure_relation_cninfo",
+          "description": "调研类信息披露",
+          "example_params": { "symbol": "000001", "market": "沪深京", "start_date": "20230619", "end_date": "20231220" }
+        },
+        {
+          "name": "stock_industry_category_cninfo",
+          "description": "行业分类数据",
+          "example_params": { "symbol": "巨潮行业分类标准" }
+        },
+        {
+          "name": "stock_industry_change_cninfo",
+          "description": "行业分类变动历史",
+          "example_params": { "symbol": "002594", "start_date": "20091227", "end_date": "20220708" }
+        },
+        {
+          "name": "stock_share_change_cninfo",
+          "description": "公司股本变动信息",
+          "example_params": { "symbol": "002594", "start_date": "20091227", "end_date": "20241021" }
+        },
+        {
+          "name": "stock_allotment_cninfo",
+          "description": "配股实施方案",
+          "example_params": { "symbol": "600030", "start_date": "19700101", "end_date": "22220222" }
+        },
+        {
+          "name": "stock_profile_cninfo",
+          "description": "公司概况信息",
+          "example_params": { "symbol": "600030" }
+        }
+      ]
+    },
+    {
+      "name": "机构相关",
+      "description": "机构持股与推荐评级",
+      "interfaces": [
+        {
+          "name": "stock_institute_hold_detail",
+          "description": "机构持股明细（新浪）",
+          "example_params": { "stock": "300003", "quarter": "20201" }
+        },
+        {
+          "name": "stock_institute_recommend",
+          "description": "机构推荐池指标",
+          "example_params": { "symbol": "最新投资评级" }
+        },
+        {
+          "name": "stock_institute_recommend_detail",
+          "description": "机构对个股的评级记录",
+          "example_params": { "symbol": "000001" }
+        }
+      ]
+    },
+    {
+      "name": "龙虎榜与技术选股",
+      "description": "龙虎榜与技术分析选股",
+      "interfaces": [
+        {
+          "name": "stock_lh_yyb_capital",
+          "description": "龙虎榜营业部资金实力排行",
+          "example_params": {}
+        },
+        {
+          "name": "stock_lh_yyb_control",
+          "description": "龙虎榜营业部抱团操作排行",
+          "example_params": {}
+        },
+        {
+          "name": "stock_rank_cxg_ths",
+          "description": "同花顺–创新高排行榜",
+          "example_params": { "symbol": "创月新高" }
+        },
+        {
+          "name": "stock_rank_cxd_ths",
+          "description": "同花顺–创新低排行榜",
+          "example_params": { "symbol": "创月新低" }
+        }
+      ]
+    },
+    {
+      "name": "融资融券",
+      "description": "融资融券汇总与明细",
+      "interfaces": [
+        {
+          "name": "stock_margin_sse",
+          "description": "融资融券汇总数据（上交所）",
+          "example_params": { "start_date": "20010106", "end_date": "20210208" }
+        },
+        {
+          "name": "stock_margin_detail_sse",
+          "description": "融资融券明细（上交所）",
+          "example_params": { "date": "20230922" }
+        }
+      ]
+    }
+  ]
+}
