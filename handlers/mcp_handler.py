@@ -3,6 +3,7 @@ import math
 import pandas as pd
 from typing import Any, Optional, List, Dict
 from fastapi import HTTPException
+from tenacity import retry, stop_after_attempt, wait_fixed
 
 from core.mcp_protocol import MCPRequest
 from models.schemas import PaginatedDataResponse
@@ -14,20 +15,38 @@ akshare_adaptor = AKShareAdaptor()
 # Define a maximum data size limit (e.g., 10 MB) for fetched data
 MAX_DATA_SIZE_BYTES = 10 * 1024 * 1024  # 10 MB
 
+class DataSizeExceededError(ValueError):
+    """Custom exception for when fetched data exceeds the size limit."""
+    pass
+
 def _get_data_size(data: Any) -> int:
     """Estimates the size of the data in bytes."""
     if isinstance(data, pd.DataFrame):
         return data.memory_usage(deep=True).sum()
-    # Add other type estimations if necessary, for now, this is the primary concern
     return 0
 
 def _normalize_data(data: Any) -> List[Dict[str, Any]]:
     """
-    Normalizes data from various AkShare return types into a list of dictionaries.
+    Normalizes data from various AkShare return types into a list of dictionaries
+    that is JSON serializable.
     """
     if isinstance(data, pd.DataFrame):
-        # Convert NaT to None (or string) for JSON serialization
-        df = data.replace({pd.NaT: None})
+        df = data.copy()
+        for col in df.columns:
+            # Check if the column is of datetime64 type
+            if pd.api.types.is_datetime64_any_dtype(df[col]):
+                df[col] = df[col].dt.strftime('%Y-%m-%d %H:%M:%S')
+            # Also check if the column is of object type and its first non-null element is a date/datetime object
+            elif df[col].dtype == 'object':
+                first_valid_index = df[col].first_valid_index()
+                if first_valid_index is not None:
+                    import datetime
+                    if isinstance(df[col][first_valid_index], (datetime.date, datetime.datetime)):
+                        # Convert entire column, handling potential errors
+                        df[col] = pd.to_datetime(df[col], errors='coerce').dt.strftime('%Y-%m-%d %H:%M:%S')
+
+        # Replace any remaining non-serializable values like NaT or NaN
+        df = df.replace({pd.NaT: None, float('nan'): None})
         return df.to_dict('records')
     
     if isinstance(data, list):
@@ -49,6 +68,34 @@ def _normalize_data(data: Any) -> List[Dict[str, Any]]:
         
     return []
 
+@retry(stop=stop_after_attempt(3), wait=wait_fixed(1), reraise=True)
+async def _fetch_akshare_data_with_retry(interface: str, params: Dict[str, Any]) -> Any:
+    """
+    Fetches data from the AkShare adaptor with a retry mechanism.
+    """
+    logger.info(f"Attempting to fetch data for interface '{interface}' with params: {params}")
+    try:
+        return await akshare_adaptor.call(interface, **params)
+    except Exception as e:
+        logger.warning(f"Attempt to fetch '{interface}' failed: {e}. Retrying...")
+        raise
+
+async def _get_and_normalize_akshare_data(interface: str, params: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """
+    Core logic to fetch data from AKShare and normalize it.
+    """
+    raw_result = await _fetch_akshare_data_with_retry(interface, params)
+
+    data_size = _get_data_size(raw_result)
+    if data_size > MAX_DATA_SIZE_BYTES:
+        raise DataSizeExceededError(
+            f"Fetched data size ({data_size / 1024 / 1024:.2f} MB) exceeds the limit "
+            f"of {MAX_DATA_SIZE_BYTES / 1024 / 1024} MB."
+        )
+    
+    return _normalize_data(raw_result)
+
+
 async def handle_mcp_data_request(
     request: MCPRequest,
     page: int = 1,
@@ -57,7 +104,6 @@ async def handle_mcp_data_request(
 ) -> PaginatedDataResponse:
     """
     Handles a data request using the MCP protocol and returns paginated data.
-    Logs the requesting user if provided.
     """
     try:
         user_log_prefix = f"User '{username}'" if username else "Anonymous user"
@@ -66,22 +112,8 @@ async def handle_mcp_data_request(
             f"Interface: {request.interface}, Params: {request.params}"
         )
         
-        # Call the AkShare adaptor
-        raw_result = await akshare_adaptor.call(request.interface, **request.params)
+        all_data = await _get_and_normalize_akshare_data(request.interface, request.params)
 
-        # Check the size of the fetched data before proceeding
-        data_size = _get_data_size(raw_result)
-        if data_size > MAX_DATA_SIZE_BYTES:
-            raise HTTPException(
-                status_code=413,
-                detail=f"Fetched data size ({data_size / 1024 / 1024:.2f} MB) exceeds the limit "
-                       f"of {MAX_DATA_SIZE_BYTES / 1024 / 1024} MB. Please refine your query."
-            )
-        
-        # Normalize the raw result into a list of dictionaries
-        all_data = _normalize_data(raw_result)
-
-        # Paginate the data
         total_records = len(all_data)
         total_pages = math.ceil(total_records / page_size) if total_records > 0 else 1
         
@@ -102,12 +134,12 @@ async def handle_mcp_data_request(
             status_code=404, 
             detail=f"Interface not found: '{request.interface}' is not a valid AkShare function."
         )
+    except DataSizeExceededError as e:
+        raise HTTPException(status_code=413, detail=str(e))
     except HTTPException as e:
-        # Re-raise to preserve status code and details
         raise e
     except Exception as e:
         logger.error(f"Error processing MCP request for interface '{request.interface}': {e}", exc_info=True)
-        # Return a valid PaginatedDataResponse with an error payload
         return PaginatedDataResponse(
             data=[],
             total_records=0,
