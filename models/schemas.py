@@ -73,3 +73,22 @@ class PaginatedDataResponse(BaseModel):
     total_pages: int = Field(..., description="Total number of pages.")
     request_id: Optional[str] = Field(None, description="Optional request identifier.")
     error: Optional[str] = Field(None, description="Error message if the request failed.")
+
+# --- LLM Analysis Schemas ---
+
+class LLMAnalysisRequest(BaseModel):
+    """Request for LLM intelligent analysis"""
+    query: str = Field(..., description="User's natural language query")
+    context: Optional[Dict[str, Any]] = Field(None, description="Additional context information")
+
+class LLMAnalysisResponse(BaseModel):
+    """Response from LLM intelligent analysis"""
+    summary: str = Field(..., description="Analysis summary")
+    insights: List[str] = Field(..., description="Key insights from the analysis")
+    recommendations: List[str] = Field(..., description="Investment recommendations")
+    data_points: Dict[str, Any] = Field(..., description="Key data points")
+    charts_suggested: List[str] = Field(..., description="Suggested chart types")
+    risk_level: str = Field(..., description="Risk assessment level")
+    confidence: float = Field(..., description="Analysis confidence score")
+    intent_detected: str = Field(..., description="Detected user intent")
+    entities_extracted: Dict[str, Any] = Field(..., description="Extracted entities")

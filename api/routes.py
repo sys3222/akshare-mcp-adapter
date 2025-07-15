@@ -6,7 +6,8 @@ from typing import Optional, Dict, Any, List
 import json
 
 from models.schemas import (
-    BacktestResult, PaginatedDataResponse, Token, UserInDB
+    BacktestResult, PaginatedDataResponse, Token, UserInDB,
+    LLMAnalysisRequest, LLMAnalysisResponse
 )
 from core.mcp_protocol import MCPRequest
 from core import security
@@ -170,3 +171,127 @@ async def get_cache_status(current_user: User = Depends(get_current_active_user)
         return cache_info
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error getting cache status: {e}")
+
+# --- LLM Intelligent Analysis ---
+
+@router.post("/llm/analyze", response_model=LLMAnalysisResponse, tags=["LLM Analysis"])
+async def llm_intelligent_analysis(
+    request: LLMAnalysisRequest,
+    current_user: User = Depends(get_current_active_user)
+) -> LLMAnalysisResponse:
+    """
+    LLM智能分析接口
+
+    基于用户的自然语言查询，进行意图识别、数据获取、智能分析和建议生成
+
+    支持的查询类型：
+    - 股票分析：分析000001、平安银行怎么样
+    - 市场概览：今日市场表现如何、大盘情况
+    - 财务指标：000001的PE、PB如何
+    - 趋势分析：000001未来走势预测
+    - 对比分析：000001 vs 600519哪个更好
+    - 投资建议：推荐一些股票
+    - 风险评估：000001投资风险如何
+    """
+    try:
+        # 导入LLM处理器
+        from handlers.llm_handler import llm_analysis_handler
+
+        # 执行智能分析
+        analysis_result = await llm_analysis_handler.analyze_query(
+            query=request.query,
+            username=current_user.username
+        )
+
+        # 构建响应
+        return LLMAnalysisResponse(
+            summary=analysis_result.summary,
+            insights=analysis_result.insights,
+            recommendations=analysis_result.recommendations,
+            data_points=analysis_result.data_points,
+            charts_suggested=analysis_result.charts_suggested,
+            risk_level=analysis_result.risk_level,
+            confidence=analysis_result.confidence,
+            intent_detected=analysis_result.confidence > 0.5 and hasattr(llm_analysis_handler, '_last_context')
+                           and llm_analysis_handler._last_context
+                           and llm_analysis_handler._last_context.intent.value or "unknown",
+            entities_extracted=analysis_result.data_points
+        )
+
+    except Exception as e:
+        logger.error(f"LLM分析失败: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"智能分析过程中出现错误: {str(e)}"
+        )
+
+@router.get("/llm/capabilities", tags=["LLM Analysis"])
+async def get_llm_capabilities(
+    current_user: User = Depends(get_current_active_user)
+) -> Dict[str, Any]:
+    """
+    获取LLM分析能力说明
+    """
+    return {
+        "supported_intents": [
+            {
+                "type": "stock_analysis",
+                "name": "股票分析",
+                "description": "分析特定股票的价格走势、技术指标等",
+                "examples": ["分析000001", "平安银行怎么样", "000001表现如何"]
+            },
+            {
+                "type": "market_overview",
+                "name": "市场概览",
+                "description": "分析整体市场表现和情绪",
+                "examples": ["今日市场表现", "大盘情况", "市场概况"]
+            },
+            {
+                "type": "financial_metrics",
+                "name": "财务指标",
+                "description": "分析财务指标如PE、PB、ROE等",
+                "examples": ["000001的PE如何", "财务指标分析", "市盈率情况"]
+            },
+            {
+                "type": "trend_analysis",
+                "name": "趋势分析",
+                "description": "分析价格趋势和技术走势",
+                "examples": ["000001走势分析", "未来趋势预测", "技术分析"]
+            },
+            {
+                "type": "comparison",
+                "name": "对比分析",
+                "description": "对比多个股票的表现",
+                "examples": ["000001 vs 600519", "对比分析", "哪个更好"]
+            },
+            {
+                "type": "recommendation",
+                "name": "投资建议",
+                "description": "提供投资建议和推荐",
+                "examples": ["推荐股票", "投资建议", "买入建议"]
+            },
+            {
+                "type": "risk_assessment",
+                "name": "风险评估",
+                "description": "评估投资风险等级",
+                "examples": ["000001风险如何", "投资风险评估", "安全吗"]
+            }
+        ],
+        "supported_entities": [
+            "股票代码（6位数字）",
+            "股票名称",
+            "时间范围（最近N天、N个月等）",
+            "财务指标名称"
+        ],
+        "analysis_features": [
+            "意图识别和理解",
+            "实体提取",
+            "数据自动获取",
+            "智能分析和洞察",
+            "风险评估",
+            "投资建议生成",
+            "图表建议"
+        ],
+        "risk_levels": ["低风险", "中等风险", "高风险"],
+        "confidence_range": [0.0, 1.0]
+    }
