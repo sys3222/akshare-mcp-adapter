@@ -17,8 +17,12 @@ from handlers.data_exploration_handler import handle_explore_data_from_file
 from handlers.file_management_handler import (
     save_uploaded_file, list_user_files, delete_user_file, get_user_file_path
 )
+from handlers import llm_handler
 
 router = APIRouter()
+
+# --- LLM ---
+router.include_router(llm_handler.router, prefix="/api/llm")
 
 # --- Authentication ---
 
