@@ -17,7 +17,10 @@ import numpy as np
 # LLM相关导入
 try:
     import google.generativeai as genai
-    from google.generativeai.types import GenerationConfig, Tool, FunctionDeclaration
+    from google.generativeai.types import (
+        GenerationConfig, Tool, FunctionDeclaration,
+        HarmCategory, HarmBlockThreshold, Part
+    )
     LLM_AVAILABLE = True
 except ImportError:
     LLM_AVAILABLE = False
@@ -48,6 +51,32 @@ def configure_llm():
     except Exception as e:
         logger.error(f"Failed to configure LLM: {e}")
         return False
+
+# 改进的LLM配置（借鉴旧版本）
+def get_enhanced_generation_config():
+    """获取增强的生成配置"""
+    if not LLM_AVAILABLE:
+        return None
+
+    return GenerationConfig(
+        temperature=0.1,  # 更低的温度，更稳定的金融分析
+        top_p=0.95,
+        top_k=64,
+        max_output_tokens=8192,  # 更大的输出限制
+        response_mime_type="text/plain",
+    )
+
+def get_safety_settings():
+    """获取安全设置"""
+    if not LLM_AVAILABLE:
+        return None
+
+    return {
+        HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
+        HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
+    }
 
 # 定义AkShare数据获取工具
 def create_akshare_tool():
@@ -94,6 +123,36 @@ def load_and_format_interfaces():
     except Exception as e:
         logger.error(f"Error loading interfaces: {e}")
         return "无法加载接口列表。\n"
+
+def get_enhanced_system_instructions():
+    """获取增强的系统指令（借鉴旧版本的优秀设计）"""
+    tool_descriptions = load_and_format_interfaces()
+
+    return f"""你是一个专业的中国金融市场数据分析助手。你的任务是帮助用户获取和分析金融数据。
+
+**核心职责：**
+1. **理解用户需求** - 准确识别用户想要的具体金融数据类型
+2. **选择合适接口** - 从下面的AkShare接口列表中选择最适合的接口
+3. **构建参数字典** - 为选定的接口构建正确的参数
+4. **调用数据工具** - 使用get_akshare_data工具获取数据
+5. **专业分析** - 对获取的数据进行专业的金融分析
+6. **提供建议** - 基于数据分析给出投资建议和风险提示
+
+**分析原则：**
+- 保持客观和专业的分析态度
+- 基于数据事实进行分析，避免主观臆测
+- 提供具体的数字和比例支持结论
+- 明确指出数据的时间范围和局限性
+- 给出风险提示和投资建议时要谨慎
+
+**可用的AkShare接口：**
+{tool_descriptions}
+
+**重要提醒：**
+- 如果工具返回数据，请进行深入的专业分析
+- 如果工具返回错误，请清楚地告知用户并建议替代方案
+- 始终以用户的投资安全为首要考虑
+"""
 
 # 全局LLM配置状态
 LLM_CONFIGURED = configure_llm() if LLM_AVAILABLE else False
@@ -262,66 +321,61 @@ class LLMAnalysisHandler:
             )
 
     async def _analyze_with_llm(self, query: str, username: str = None) -> AnalysisResult:
-        """使用LLM进行智能分析"""
+        """使用LLM进行智能分析（借鉴旧版本的优秀设计）"""
         try:
+            # 使用增强的配置创建模型
             model = genai.GenerativeModel(
-                model_name=self.model_name,
-                tools=[self.akshare_tool]
+                model_name="gemini-1.5-pro-latest",  # 使用更强大的Pro模型
+                generation_config=get_enhanced_generation_config(),
+                safety_settings=get_safety_settings(),
+                tools=[self.akshare_tool],
+                system_instruction=get_enhanced_system_instructions()
             )
 
-            # 构建包含接口信息的完整提示
-            available_tools_prompt = load_and_format_interfaces()
+            # 使用聊天会话管理（借鉴旧版本）
+            chat_session = model.start_chat()
 
-            system_prompt = """你是一个专业的金融数据分析师。请根据用户的问题：
-1. 选择合适的AkShare接口获取数据
-2. 分析数据并提供专业洞察
-3. 给出具体的投资建议和风险评估
+            # 发送用户查询到LLM
+            response = chat_session.send_message(query)
 
-请用中文回答，并保持专业、客观的分析态度。"""
+            # 检查是否需要调用工具（借鉴旧版本的优秀设计）
+            if response.function_calls:
+                tool_call = response.function_calls[0]
 
-            full_prompt = f"{system_prompt}\n\n{available_tools_prompt}\n---\n\n用户问题: {query}"
+                if tool_call.name == "get_akshare_data":
+                    interface = tool_call.args.get("interface")
+                    params = tool_call.args.get("params", {})
 
-            # 发送请求到LLM
-            response = model.generate_content(full_prompt)
-            response_part = response.candidates[0].content.parts[0]
+                    logger.info(f"LLM请求调用工具: interface={interface}, params={params}")
 
-            # 检查是否需要调用工具
-            if hasattr(response_part, 'function_call') and response_part.function_call.name == "get_akshare_data":
-                args = response_part.function_call.args
-                logger.info(f"LLM请求调用工具: {args}")
+                    if not interface:
+                        raise ValueError("LLM未提供接口名称")
 
-                # 调用实际的数据获取函数
-                try:
-                    tool_result = await _get_and_normalize_akshare_data(
-                        interface=args["interface"],
-                        params=args.get("params", {})
+                    # 调用实际的数据获取函数
+                    try:
+                        tool_result = await _get_and_normalize_akshare_data(interface, params)
+
+                        # 限制返回给LLM的数据量
+                        if isinstance(tool_result, list) and len(tool_result) > 50:
+                            tool_result = tool_result[:50] + [{"message": "... (数据已截断，仅显示前50条)"}]
+
+                    except Exception as e:
+                        error_message = f"数据获取失败: {str(e)}"
+                        logger.error(error_message)
+                        tool_result = {"error": error_message}
+
+                    # 发送工具结果回LLM（使用旧版本的方法）
+                    response = chat_session.send_message(
+                        Part.from_function_response(
+                            name="get_akshare_data",
+                            response={"data": tool_result},
+                        )
                     )
 
-                    # 限制返回给LLM的数据量
-                    if isinstance(tool_result, list) and len(tool_result) > 50:
-                        tool_result = tool_result[:50] + [{"message": "... (数据已截断，仅显示前50条)"}]
-
-                except Exception as e:
-                    error_message = f"数据获取失败: {str(e)}"
-                    logger.error(error_message)
-                    tool_result = {"error": error_message}
-
-                # 构建对话历史
-                conversation_history = [
-                    {"role": "user", "parts": [{"text": full_prompt}]},
-                    {"role": "model", "parts": [response_part]},
-                    {"role": "tool", "parts": [{"function_response": {
-                        "name": "get_akshare_data",
-                        "response": {"content": json.dumps(tool_result, ensure_ascii=False)}
-                    }}]}
-                ]
-
-                # 获取最终分析结果
-                final_response = model.generate_content(conversation_history)
-                final_text = final_response.candidates[0].content.parts[0].text
+                final_text = response.text
             else:
                 # 无需工具调用，直接返回LLM响应
-                final_text = response_part.text
+                final_text = response.text
 
             # 解析LLM响应并构建结构化结果
             return self._parse_llm_response(final_text, query)

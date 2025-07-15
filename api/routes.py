@@ -304,3 +304,51 @@ async def get_llm_capabilities(
         "risk_levels": ["低风险", "中等风险", "高风险"],
         "confidence_range": [0.0, 1.0]
     }
+
+@router.post("/llm/chat", tags=["LLM Analysis"])
+async def llm_chat_completions(
+    prompt: str,
+    current_user: User = Depends(get_current_active_user)
+):
+    """
+    简化的LLM聊天接口（借鉴旧版本的优秀设计）
+
+    直接与LLM对话，支持自动工具调用和数据获取
+    适合需要更自然对话体验的场景
+
+    参数：
+    - prompt: 用户的自然语言查询
+
+    返回：
+    - response: LLM的直接回复文本
+    """
+    try:
+        from handlers.llm_handler import llm_analysis_handler
+
+        if not llm_analysis_handler.use_llm:
+            raise HTTPException(
+                status_code=503,
+                detail="LLM功能不可用，请检查GEMINI_API_KEY配置"
+            )
+
+        # 使用增强的LLM分析
+        analysis_result = await llm_analysis_handler.analyze_query(
+            query=prompt,
+            username=current_user.username
+        )
+
+        # 返回更自然的聊天响应
+        return {
+            "response": analysis_result.summary,
+            "insights": analysis_result.insights,
+            "recommendations": analysis_result.recommendations,
+            "risk_level": analysis_result.risk_level,
+            "confidence": analysis_result.confidence
+        }
+
+    except Exception as e:
+        logger.error(f"LLM聊天失败: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"聊天服务出现错误: {str(e)}"
+        )
