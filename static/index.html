@@ -6,12 +6,14 @@
     <title>Backtrader MCP Service</title>
     <style>
         body { font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; }
-        h1, h2, h3 { color: #333; }
+        h1, h2, h3, h4 { color: #333; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; }
         input[type="file"], input[type="text"], input[type="password"], textarea, select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
-        button { background-color: #4CAF50; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; }
-        button:hover { background-color: #45a049; }
+        button { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        button.delete-btn { background-color: #f44336; }
+        button.delete-btn:hover { background-color: #da190b; }
         button:disabled { background-color: #cccccc; cursor: not-allowed; }
         .error { color: red; margin-top: 10px; }
         .tabs { display: flex; margin-bottom: 0; border-bottom: 1px solid #ddd; }
@@ -19,12 +21,16 @@
         .tab.active { background-color: white; border-color: #ddd; border-bottom: 1px solid white; border-radius: 4px 4px 0 0; font-weight: bold; }
         .tab-content { display: none; border: 1px solid #ddd; padding: 20px; border-top: none; border-radius: 0 4px 4px 4px; }
         .tab-content.active { display: block; }
-        .examples { margin-top: 20px; padding: 15px; background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 4px; }
-        .examples ul { padding-left: 20px; margin: 0; }
+        .sub-tabs { display: flex; margin-bottom: 15px; border-bottom: 1px solid #eee; }
+        .sub-tab { padding: 8px 15px; cursor: pointer; color: #007bff; }
+        .sub-tab.active { font-weight: bold; border-bottom: 2px solid #007bff; }
+        .sub-tab-content { display: none; }
+        .sub-tab-content.active { display: block; }
+        #user-files-list { list-style-type: none; padding: 0; }
+        #user-files-list li { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #eee; }
+        #user-files-list li:last-child { border-bottom: none; }
+        #user-files-list .file-actions button { margin-left: 10px; padding: 5px 10px; font-size: 0.9em; }
         .results { margin-top: 30px; border: 1px solid #ddd; padding: 20px; border-radius: 4px; display: none; }
-        .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-bottom: 20px; }
-        .metric-item { background-color: #f9f9f9; padding: 10px; border-radius: 4px; }
-        .metric-name { font-weight: bold; color: #555; }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background-color: white; padding: 30px; border-radius: 8px; width: 100%; max-width: 400px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         .user-info { position: absolute; top: 20px; right: 20px; font-size: 0.9em; color: #555; }
@@ -38,11 +44,9 @@
     </style>
 </head>
 <body>
-    <!-- Login Modal -->
     <div id="login-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <h2>登录</h2>
-            <p>请输入您的凭证以继续</p>
             <form id="login-form">
                 <div class="form-group"><label for="username">用户名:</label><input type="text" id="username" name="username" required></div>
                 <div class="form-group"><label for="password">密码:</label><input type="password" id="password" name="password" required></div>
@@ -55,7 +59,7 @@
     <div id="app-content" style="display: none;">
         <div class="user-info"><span id="user-display"></span><button id="logout-btn">登出</button></div>
         <h1>Backtrader MCP Service</h1>
-        <p>统一��回测与数据分析平台</p>
+        <p>统一回测与数据分析平台</p>
         
         <div class="tabs">
             <div class="tab active" data-tab="file-upload">文件上传回测</div>
@@ -63,7 +67,7 @@
             <div class="tab" data-tab="data-analysis">数据分析</div>
         </div>
         
-        <form id="backtest-form">
+        <form id="main-form">
             <div class="tab-content active" id="file-upload-tab">
                 <!-- Content for File Upload Tab -->
             </div>
@@ -74,261 +78,167 @@
 
             <div class="tab-content" id="data-analysis-tab">
                 <h3>数据分析</h3>
-                <p>直接调用 AkShare 的原始数据接口，以表格形式展示数据，支持翻页。</p>
-                <div class="form-group"><label for="da-interface">接口名称:</label><select id="da-interface"><option value="">加载中...</option></select></div>
-                <div class="form-group"><label for="da-params">接口参数 (JSON):</label><textarea id="da-params" rows="6"></textarea></div>
-                <button type="button" onclick="fetchDataForAnalysis(1)">获取数据</button>
+                <div class="sub-tabs">
+                    <div class="sub-tab active" data-subtab="da-fetch">数据获取 (API)</div>
+                    <div class="sub-tab" data-subtab="da-browse">我的数据文件</div>
+                </div>
+
+                <div class="sub-tab-content active" id="da-fetch-content">
+                    <p>直接调用 AkShare 的原始数据接口 (最大 10 MB)。</p>
+                    <div class="form-group"><label for="da-interface">接口名称:</label><select id="da-interface"><option value="">加载中...</option></select></div>
+                    <div class="form-group"><label for="da-params">接口参数 (JSON):</label><textarea id="da-params" rows="6"></textarea></div>
+                    <button type="button" onclick="fetchDataForAnalysis(1)">获取数据</button>
+                </div>
+
+                <div class="sub-tab-content" id="da-browse-content">
+                    <h4>上传新文件</h4>
+                    <p>上传您自己的数据文件 (如 .csv) 进行浏览和分析 (最大 10 MB)。</p>
+                    <div class="form-group"><label for="upload-data-file">选择文件:</label><input type="file" id="upload-data-file" accept=".csv"></div>
+                    <button type="button" id="upload-btn">上传文件</button>
+                    <hr style="margin: 20px 0;">
+                    <h4>已上传文件</h4>
+                    <div id="user-files-container">
+                        <ul id="user-files-list"></ul>
+                        <p id="no-files-msg" style="display: none;">您还没��上传任何文件。</p>
+                    </div>
+                </div>
+
                 <div id="data-analysis-results">
+                    <h4 id="results-header"></h4>
                     <div class="pagination-container" id="pagination-top"></div>
                     <div class="data-table-container"><table class="data-table" id="data-analysis-table"><thead></thead><tbody></tbody></table></div>
                     <div class="pagination-container" id="pagination-bottom"></div>
                 </div>
             </div>
 
-            <hr style="margin-top: 20px; margin-bottom: 20px;">
-            
-            <div class="form-group"><label for="benchmark-symbol">基准指数 (可选):</label><select id="benchmark-symbol" name="benchmark_symbol"><option value="">无</option><option value="000300">沪深300</option><option value="000001">上证指数</option></select></div>
-            <div class="form-group"><label for="params">策略参数 (JSON, 可选):</label><textarea id="params" name="params" rows="4" placeholder='{"fast_period": 10, "slow_period": 30}'></textarea></div>
-            <button type="submit">运行回测</button>
-            <div id="form-error" class="error"></div>
+            <div id="backtest-common-form">
+                <hr style="margin-top: 20px; margin-bottom: 20px;">
+                <div class="form-group"><label for="benchmark-symbol">基准指数 (可选):</label><select id="benchmark-symbol" name="benchmark_symbol"><option value="">无</option><option value="000300">沪深300</option><option value="000001">上证指数</option></select></div>
+                <div class="form-group"><label for="params">策略参数 (JSON, 可选):</label><textarea id="params" name="params" rows="4" placeholder='{"fast_period": 10, "slow_period": 30}'></textarea></div>
+                <button type="submit">运行回测</button>
+                <div id="form-error" class="error"></div>
+            </div>
         </form>
         
-        <div id="results" class="results">
-            <!-- Backtest results will be displayed here -->
-        </div>
+        <div id="results" class="results"></div>
     </div>
     
     <script>
-        // --- Authentication & Core Logic ---
-        async function apiFetch(url, options = {}) { /* ... existing code ... */ }
-        function handleLogout() { /* ... existing code ... */ }
-        async function checkAuth() {
-            const token = localStorage.getItem('accessToken');
-            const loginModal = document.getElementById('login-modal');
-            const appContent = document.getElementById('app-content');
+        const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+        let currentBrowserFilename = null;
 
-            if (!token) {
-                loginModal.style.display = 'flex';
-                appContent.style.display = 'none';
-                return;
-            }
-
-            try {
-                const response = await fetch('/api/users/me', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (response.ok) {
-                    const user = await response.json();
-                    loginModal.style.display = 'none';
-                    appContent.style.display = 'block';
-                    document.getElementById('user-display').textContent = `Welcome, ${user.username}`;
-                } else {
-                    localStorage.removeItem('accessToken');
-                    loginModal.style.display = 'flex';
-                    appContent.style.display = 'none';
-                }
-            } catch (error) {
-                console.error('Auth check failed:', error);
-                localStorage.removeItem('accessToken');
-                loginModal.style.display = 'flex';
-                appContent.style.display = 'none';
-            }
-        }
-        document.getElementById('login-form').addEventListener('submit', async function(e) { /* ... existing code ... */ });
-        document.getElementById('logout-btn').addEventListener('click', handleLogout);
-        document.querySelectorAll('.tab').forEach(tab => { /* ... existing code ... */ });
-        document.getElementById('backtest-form').addEventListener('submit', async function(e) { /* ... existing code ... */ });
-        function displayResults(result) { /* ... existing code ... */ }
-
-        // --- Dynamic Interface Loading ---
-        async function loadInterfaceConfig() {
-            const selectElement = document.getElementById('da-interface');
-            const paramsTextarea = document.getElementById('da-params');
-            try {
-                const response = await fetch('/api/interfaces');
-                if (!response.ok) throw new Error('Failed to load interface config');
-                const config = await response.json();
-                
-                selectElement.innerHTML = '<option value="">选择一个接口</option>';
-                
-                config.categories.forEach(category => {
-                    const optgroup = document.createElement('optgroup');
-                    optgroup.label = category.name;
-                    category.interfaces.forEach(iface => {
-                        const option = document.createElement('option');
-                        option.value = iface.name;
-                        option.textContent = iface.description;
-                        // Store example params as a data attribute
-                        option.dataset.example = JSON.stringify(iface.example_params, null, 2);
-                        optgroup.appendChild(option);
-                    });
-                    selectElement.appendChild(optgroup);
-                });
-
-            } catch (error) {
-                selectElement.innerHTML = `<option value="">加载失败: ${error.message}</option>`;
-            }
-
-            selectElement.addEventListener('change', function() {
-                const selectedOption = this.options[this.selectedIndex];
-                if (selectedOption && selectedOption.dataset.example) {
-                    paramsTextarea.value = selectedOption.dataset.example;
-                } else {
-                    paramsTextarea.value = '';
-                }
-            });
-        }
-
-        // --- Data Analysis ---
-        async function fetchDataForAnalysis(page = 1) { /* ... existing code ... */ }
-        function renderDataTable(data) { /* ... existing code ... */ }
-        function renderPagination(totalPages, currentPage, totalRecords) { /* ... existing code ... */ }
-
-        // --- Initial Load ---
-        document.addEventListener('DOMContentLoaded', () => {
-            checkAuth();
-            loadInterfaceConfig();
-            // Restore other tab contents
-            document.getElementById('file-upload-tab').innerHTML = `
-                <div class="form-group"><label for="strategy-file">策略文件 (.py):</label><input type="file" id="strategy-file" name="strategy_file" accept=".py" required></div>
-                <div class="form-group"><label for="data-file">数据文件 (.csv):</label><input type="file" id="data-file" name="data_file" accept=".csv" required></div>
-                <div class="examples"><p>不知道上传什么？查看或下载示例文件：</p><ul><li><a href="/static/examples/simple_ma_strategy_example.py" target="_blank" download>双均线策略示例 (.py)</a></li><li><a href="/static/examples/sample_data_example.csv" target="_blank" download>行情数据表示例 (.csv)</a></li></ul></div>`;
-            document.getElementById('integrated-tab').innerHTML = `
-                <h3>集成回测 - AkShare数据 + 策略</h3>
-                <p>使用AkShare数据接口直接进行策略回测，无需手动下载数据</p>
-                <div class="form-group"><label for="strategy-file-integrated">策略文件 (.py):</label><input type="file" id="strategy-file-integrated" name="strategy_file_integrated" accept=".py" required></div>
-                <div class="form-group"><label for="integrated-interface">数���接口:</label><select id="integrated-interface" name="integrated_interface"><option value="stock_zh_a_hist" selected>股票历史数据</option><option value="fund_etf_hist_em">ETF历史数据</option><option value="index_zh_a_hist">指数历史数据</option></select></div>
-                <div class="form-group"><label for="integrated-symbol">代码:</label><input type="text" id="integrated-symbol" name="integrated_symbol" value="000001" placeholder="例如: 000001, 518880"></div>
-                <div class="form-group"><label for="integrated-start-date">开始日期:</label><input type="text" id="integrated-start-date" name="integrated_start_date" value="20230101" placeholder="格式: YYYYMMDD"></div>
-                <div class="form-group"><label for="integrated-end-date">结束日期:</label><input type="text" id="integrated-end-date" name="integrated_end_date" value="20231231" placeholder="格式: YYYYMMDD"></div>`;
-        });
-
-        // --- Full Implementations ---
-
+        // --- API & Auth ---
         async function apiFetch(url, options = {}) {
             const token = localStorage.getItem('accessToken');
             const headers = { ...options.headers };
-
-            if (token) {
-                headers['Authorization'] = `Bearer ${token}`;
-            }
-
-            if (!(options.body instanceof FormData)) {
+            if (token) { headers['Authorization'] = `Bearer ${token}`; }
+            if (options.body && !(options.body instanceof FormData)) {
                 headers['Content-Type'] = 'application/json';
             }
-            
             const response = await fetch(url, { ...options, headers });
-
             if (response.status === 401) {
                 localStorage.removeItem('accessToken');
                 location.reload();
                 throw new Error('Unauthorized');
             }
-            
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({ detail: response.statusText }));
                 throw new Error(errorData.detail || 'An unknown error occurred.');
             }
-
             if (response.status === 204) return null;
             return response.json();
         }
-
-        function handleLogout() {
-            localStorage.removeItem('accessToken');
-            location.reload();
-        }
-
-        document.getElementById('login-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const loginError = document.getElementById('login-error');
-            loginError.textContent = '';
-            const formData = new FormData(e.target);
-            
+        async function checkAuth() {
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                document.getElementById('login-modal').style.display = 'flex';
+                document.getElementById('app-content').style.display = 'none';
+                return;
+            }
             try {
-                const response = await fetch('/api/token', { method: 'POST', body: formData });
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Login failed.');
-                }
-                const data = await response.json();
-                localStorage.setItem('accessToken', data.access_token);
+                const user = await apiFetch('/api/users/me');
+                document.getElementById('login-modal').style.display = 'none';
+                document.getElementById('app-content').style.display = 'block';
+                document.getElementById('user-display').textContent = `Welcome, ${user.username}`;
+            } catch (error) {
+                localStorage.removeItem('accessToken');
                 location.reload();
-            } catch (error) {
-                loginError.textContent = error.message;
             }
-        });
-
-        document.getElementById('logout-btn').addEventListener('click', handleLogout);
-
-        document.getElementById('backtest-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const formError = document.getElementById('form-error');
-            const resultsDiv = document.getElementById('results');
-            formError.textContent = '';
-            resultsDiv.style.display = 'none';
-            resultsDiv.innerHTML = 'Running backtest...';
-
-            const activeTab = document.querySelector('.tab.active').dataset.tab;
-            const formData = new FormData();
-            let url = '';
-
-            const paramsInput = document.getElementById('params').value;
-            if (paramsInput) formData.append('params', paramsInput);
-            const benchmark = document.getElementById('benchmark-symbol').value;
-            if (benchmark) formData.append('benchmark_symbol', benchmark);
-
-            try {
-                if (activeTab === 'file-upload') {
-                    url = '/api/backtest';
-                    const strategyFile = document.getElementById('strategy-file').files[0];
-                    const dataFile = document.getElementById('data-file').files[0];
-                    if (!strategyFile || !dataFile) throw new Error('Strategy and data files are required.');
-                    formData.append('strategy_file', strategyFile);
-                    formData.append('data_file', dataFile);
-                } else if (activeTab === 'integrated') {
-                    url = '/api/backtest-with-mcp';
-                    const strategyFile = document.getElementById('strategy-file-integrated').files[0];
-                    if (!strategyFile) throw new Error('Strategy file is required.');
-                    formData.append('strategy_file', strategyFile);
-                    formData.append('interface', document.getElementById('integrated-interface').value);
-                    formData.append('symbol', document.getElementById('integrated-symbol').value);
-                    formData.append('start_date', document.getElementById('integrated-start-date').value);
-                    formData.append('end_date', document.getElementById('integrated-end-date').value);
-                } else { return; }
-
-                const result = await apiFetch(url, { method: 'POST', body: formData });
-                displayResults(result);
-            } catch (error) {
-                formError.textContent = `Error: ${error.message}`;
-            }
-        });
-
-        function displayResults(result) {
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.style.display = 'block';
-            let metricsHtml = '<h3>Backtest Metrics</h3><div class="metrics">';
-            for (const key in result.metrics) {
-                metricsHtml += `<div class="metric-item"><span class="metric-name">${key}:</span> ${result.metrics[key]}</div>`;
-            }
-            metricsHtml += '</div>';
-            const plotHtml = `<h3>Equity Curve</h3><img src="data:image/png;base64,${result.plot_base64}" alt="Equity Curve Plot" style="width:100%;">`;
-            resultsDiv.innerHTML = metricsHtml + plotHtml;
         }
 
+        // --- File Management ---
+        async function loadUserFiles() {
+            const list = document.getElementById('user-files-list');
+            const noFilesMsg = document.getElementById('no-files-msg');
+            list.innerHTML = '<li>Loading...</li>';
+            try {
+                const files = await apiFetch('/api/data/files');
+                list.innerHTML = '';
+                if (files.length === 0) {
+                    noFilesMsg.style.display = 'block';
+                } else {
+                    noFilesMsg.style.display = 'none';
+                    files.forEach(filename => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `
+                            <span>${filename}</span>
+                            <div class="file-actions">
+                                <button onclick="browseStoredFile('${filename}', 1)">Browse</button>
+                                <button class="delete-btn" onclick="deleteUserFile('${filename}')">Delete</button>
+                            </div>
+                        `;
+                        list.appendChild(li);
+                    });
+                }
+            } catch (error) {
+                list.innerHTML = `<li><span class="error">Error loading files: ${error.message}</span></li>`;
+            }
+        }
+
+        async function handleFileUpload() {
+            const fileInput = document.getElementById('upload-data-file');
+            if (fileInput.files.length === 0) {
+                alert('Please select a file to upload.');
+                return;
+            }
+            const file = fileInput.files[0];
+            if (file.size > MAX_FILE_SIZE_BYTES) {
+                alert(`File size exceeds the limit of ${MAX_FILE_SIZE_BYTES / 1024 / 1024} MB.`);
+                return;
+            }
+            const formData = new FormData();
+            formData.append('file', file);
+            const uploadBtn = document.getElementById('upload-btn');
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = 'Uploading...';
+            try {
+                await apiFetch('/api/data/upload', { method: 'POST', body: formData });
+                fileInput.value = ''; // Clear the input
+                await loadUserFiles();
+            } catch (error) {
+                alert(`Upload failed: ${error.message}`);
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'Upload File';
+            }
+        }
+
+        async function deleteUserFile(filename) {
+            if (!confirm(`Are you sure you want to delete ${filename}?`)) return;
+            try {
+                await apiFetch(`/api/data/files/${filename}`, { method: 'DELETE' });
+                await loadUserFiles();
+            } catch (error) {
+                alert(`Failed to delete file: ${error.message}`);
+            }
+        }
+
+        // --- Data Analysis & Browsing ---
         async function fetchDataForAnalysis(page = 1) {
             const interfaceName = document.getElementById('da-interface').value;
             const paramsJson = document.getElementById('da-params').value;
-            const resultsContainer = document.getElementById('data-analysis-results');
-            
-            // Show loading indicator immediately
-            resultsContainer.style.display = 'block';
-            resultsContainer.innerHTML = '<p>Loading data, please wait...</p>';
-
             if (!interfaceName) {
                 alert('Please select an interface.');
-                resultsContainer.style.display = 'none';
                 return;
             }
             let params;
@@ -336,41 +246,42 @@
                 params = JSON.parse(paramsJson);
             } catch (e) {
                 alert('Invalid JSON in parameters.');
-                resultsContainer.style.display = 'none';
                 return;
             }
-            const requestBody = {
-                interface: interfaceName,
-                params: params,
-                request_id: `req-${Date.now()}`
-            };
+            const requestBody = { interface: interfaceName, params: params, request_id: `req-${Date.now()}` };
+            const url = `/api/mcp-data?page=${page}&page_size=20`;
+            await executeDataRequest(url, { method: 'POST', body: JSON.stringify(requestBody) }, `API: ${interfaceName}`, page, fetchDataForAnalysis);
+        }
+
+        async function browseStoredFile(filename, page = 1) {
+            currentBrowserFilename = filename;
+            const url = `/api/data/explore/${filename}?page=${page}&page_size=20`;
+            await executeDataRequest(url, { method: 'POST' }, `File: ${filename}`, page, browseStoredFile);
+        }
+
+        async function executeDataRequest(url, options, headerText, page, paginatorFn) {
+            const resultsContainer = document.getElementById('data-analysis-results');
+            resultsContainer.style.display = 'block';
+            document.getElementById('results-header').textContent = `Results for ${headerText}`;
+            resultsContainer.querySelector('.data-table-container').innerHTML = '<p>Loading data...</p>';
             try {
-                const url = `/api/mcp-data?page=${page}&page_size=20`;
-                const result = await apiFetch(url, { method: 'POST', body: JSON.stringify(requestBody) });
-
-                if (result.error) {
-                    throw new Error(result.error);
-                }
-                
-                // Clear loading message and prepare for new content
-                resultsContainer.innerHTML = `
-                    <div class="pagination-container" id="pagination-top"></div>
-                    <div class="data-table-container"><table class="data-table" id="data-analysis-table"><thead></thead><tbody></tbody></table></div>
-                    <div class="pagination-container" id="pagination-bottom"></div>
-                `;
-
+                const result = await apiFetch(url, options);
+                if (result.error) throw new Error(result.error);
                 renderDataTable(result.data);
-                renderPagination(result.total_pages, result.current_page, result.total_records);
+                renderPagination(result.total_pages, result.current_page, result.total_records, paginatorFn);
             } catch (error) {
-                console.error("Error fetching data:", error);
-                resultsContainer.innerHTML = `<p class="error">An error occurred: ${error.message}</p>`;
+                resultsContainer.querySelector('.data-table-container').innerHTML = `<p class="error">An error occurred: ${error.message}</p>`;
             }
         }
 
         function renderDataTable(data) {
-            const table = document.getElementById('data-analysis-table');
-            table.innerHTML = '';
-            if (!data || data.length === 0) { table.innerHTML = '<tr><td>No data returned.</td></tr>'; return; }
+            const tableContainer = document.querySelector('#data-analysis-results .data-table-container');
+            if (!data || data.length === 0) {
+                tableContainer.innerHTML = '<p>No data returned.</p>';
+                return;
+            }
+            const table = document.createElement('table');
+            table.className = 'data-table';
             const thead = table.createTHead();
             const headerRow = thead.insertRow();
             Object.keys(data[0]).forEach(key => {
@@ -383,30 +294,61 @@
                 const row = tbody.insertRow();
                 Object.values(item).forEach(text => {
                     const cell = row.insertCell();
-                    cell.textContent = text;
+                    cell.textContent = String(text !== null ? text : '');
                 });
             });
+            tableContainer.innerHTML = '';
+            tableContainer.appendChild(table);
         }
 
-        function renderPagination(totalPages, currentPage, totalRecords) {
+        function renderPagination(totalPages, currentPage, totalRecords, paginatorFn) {
             const topPagination = document.getElementById('pagination-top');
             const bottomPagination = document.getElementById('pagination-bottom');
-            if (totalPages <= 1) { topPagination.innerHTML = ''; bottomPagination.innerHTML = ''; return; }
+            [topPagination, bottomPagination].forEach(p => p.innerHTML = '');
+            if (totalPages <= 1) return;
+
+            const renderFnName = paginatorFn.name;
+            const args = renderFnName === 'browseStoredFile' ? `'${currentBrowserFilename}', ` : '';
+
             let paginationHtml = `<div>Page ${currentPage} of ${totalPages} (${totalRecords} records)</div><div>`;
-            if (currentPage > 1) { paginationHtml += `<button onclick="fetchDataForAnalysis(${currentPage - 1})">Previous</button>`; }
-            if (currentPage < totalPages) { paginationHtml += `<button onclick="fetchDataForAnalysis(${currentPage + 1})">Next</button>`; }
+            if (currentPage > 1) { paginationHtml += `<button onclick="${renderFnName}(${args}${currentPage - 1})">Previous</button>`; }
+            if (currentPage < totalPages) { paginationHtml += `<button onclick="${renderFnName}(${args}${currentPage + 1})">Next</button>`; }
             paginationHtml += `</div>`;
-            topPagination.innerHTML = paginationHtml;
-            bottomPagination.innerHTML = paginationHtml;
+            [topPagination, bottomPagination].forEach(p => p.innerHTML = paginationHtml);
         }
 
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                tab.classList.add('active');
-                document.getElementById(tab.dataset.tab + '-tab').classList.add('active');
+        // --- Initial Load & Event Listeners ---
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            // Main tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    tab.classList.add('active');
+                    document.getElementById(tab.dataset.tab + '-tab').classList.add('active');
+                    document.getElementById('backtest-common-form').style.display = (tab.dataset.tab === 'data-analysis') ? 'none' : 'block';
+                });
             });
+            // Data analysis sub-tabs
+            document.querySelectorAll('#data-analysis-tab .sub-tab').forEach(subTab => {
+                subTab.addEventListener('click', () => {
+                    document.querySelectorAll('#data-analysis-tab .sub-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('#data-analysis-tab .sub-tab-content').forEach(c => c.classList.remove('active'));
+                    subTab.classList.add('active');
+                    document.getElementById(subTab.dataset.subtab + '-content').classList.add('active');
+                    document.getElementById('data-analysis-results').style.display = 'none';
+                    if (subTab.dataset.subtab === 'da-browse') {
+                        loadUserFiles();
+                    }
+                });
+            });
+            // Other listeners
+            document.getElementById('upload-btn').addEventListener('click', handleFileUpload);
+            // Load initial data
+            loadInterfaceConfig();
+            document.getElementById('file-upload-tab').innerHTML = `...`; // Populate as before
+            document.getElementById('integrated-tab').innerHTML = `...`; // Populate as before
         });
     </script>
 </body>

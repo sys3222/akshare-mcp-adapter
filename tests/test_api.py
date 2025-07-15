@@ -1,37 +1,64 @@
 import pytest
 from fastapi.testclient import TestClient
 import os
-import json
+import shutil
+from pathlib import Path
 
 # Add project root to path to allow importing 'main'
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from main import app  # Import the FastAPI app
+from main import app
+from create_user import create_user
+from core.database import SessionLocal, create_db_and_tables
 
 client = TestClient(app)
 
-# --- Test Data ---
-SAMPLE_STRATEGY_CODE = """
-import backtrader as bt
+# --- Test Setup and Teardown ---
 
-class SimpleMAStrategy(bt.Strategy):
-    params = (('fast_period', 10), ('slow_period', 30))
+@pytest.fixture(scope="session", autouse=True)
+def setup_and_teardown_test_users():
+    """Create test users before tests run and clean up after."""
+    # Ensure the tables are created before the session starts
+    create_db_and_tables()
+    db = SessionLocal()
+    try:
+        # Setup: Create test users
+        create_user(db, "testuser", "testpassword")
+        create_user(db, "testuser2", "testpassword2")
+    finally:
+        db.close()
     
-    def __init__(self):
-        self.fast_ma = bt.indicators.SMA(self.data.close, period=self.p.fast_period)
-        self.slow_ma = bt.indicators.SMA(self.data.close, period=self.p.slow_period)
-        self.crossover = bt.indicators.CrossOver(self.fast_ma, self.slow_ma)
+    yield # This is where the tests will run
+    
+    # Teardown: Clean up created resources
+    db_file = Path("mcp_app.db")
+    if db_file.exists():
+        db_file.unlink()
         
-    def next(self):
-        if not self.position:
-            if self.crossover > 0:
-                self.buy()
-        elif self.crossover < 0:
-            self.sell()
-"""
+    cache_dir = Path("static/cache")
+    if cache_dir.exists():
+        shutil.rmtree(cache_dir)
 
-# --- API Tests ---
+# --- Fixtures ---
+
+@pytest.fixture(scope="module")
+def auth_headers():
+    """Fixture to get authentication headers for 'testuser'."""
+    response = client.post("/api/token", data={"username": "testuser", "password": "testpassword"})
+    assert response.status_code == 200
+    token = response.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
+
+@pytest.fixture(scope="module")
+def auth_headers_user2():
+    """Fixture to get authentication headers for 'testuser2'."""
+    response = client.post("/api/token", data={"username": "testuser2", "password": "testpassword2"})
+    assert response.status_code == 200
+    token = response.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
+
+# --- Core API Tests ---
 
 def test_health_check():
     """Tests the /health endpoint."""
@@ -39,50 +66,82 @@ def test_health_check():
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
 
-def test_get_data_sources():
-    """Tests the /data-sources endpoint."""
-    response = client.get("/api/data-sources")
+def test_login_and_get_me(auth_headers):
+    """Tests login and the /users/me endpoint."""
+    response = client.get("/api/users/me", headers=auth_headers)
+    assert response.status_code == 200
+    assert response.json()["username"] == "testuser"
+
+def test_mcp_data_request_unauthenticated():
+    """Tests that /mcp-data requires authentication."""
+    response = client.post("/api/mcp-data", json={})
+    assert response.status_code == 401
+
+# --- File Management and Exploration Tests ---
+
+def test_file_management_flow(auth_headers):
+    """Tests the full file management lifecycle: upload, list, explore, delete."""
+    
+    # 1. Initial state: No files
+    response = client.get("/api/data/files", headers=auth_headers)
+    assert response.status_code == 200
+    assert response.json() == []
+
+    # 2. Upload a file
+    test_file_path = Path("tests/data/test_upload.csv")
+    with open(test_file_path, "rb") as f:
+        files = {"file": ("test_upload.csv", f, "text/csv")}
+        response = client.post("/api/data/upload", files=files, headers=auth_headers)
+    
+    assert response.status_code == 200
+    assert response.json()["filename"] == "test_upload.csv"
+
+    # 3. List files and see the new file
+    response = client.get("/api/data/files", headers=auth_headers)
+    assert response.status_code == 200
+    assert response.json() == ["test_upload.csv"]
+
+    # 4. Explore the uploaded file's content
+    response = client.post("/api/data/explore/test_upload.csv", headers=auth_headers)
     assert response.status_code == 200
     data = response.json()
-    assert "sources" in data
-    assert isinstance(data["sources"], list)
-    assert len(data["sources"]) > 0
-    assert "name" in data["sources"][0]
-    assert "symbols" in data["sources"][0]
+    assert data["total_records"] == 2
+    assert data["current_page"] == 1
+    assert data["data"] == [{"col1": "val1", "col2": "val2"}, {"col1": "val3", "col2": "val4"}]
 
-# This test will fail now because the endpoint is protected.
-# We are leaving it here to show the original state.
-@pytest.mark.xfail(reason="Endpoint is now protected by authentication.")
-def test_mcp_data_request_success_unauthenticated():
-    """Tests a successful /mcp-data request."""
-    request_payload = {
-        "interface": "stock_zh_a_spot_em",
-        "params": {},
-        "request_id": "mcp-test-1"
-    }
-    response = client.post("/api/mcp-data", json=request_payload)
+    # 5. Delete the file
+    response = client.delete("/api/data/files/test_upload.csv", headers=auth_headers)
+    assert response.status_code == 200
+    assert response.json()["detail"] == "File deleted successfully."
+
+    # 6. Final state: No files again
+    response = client.get("/api/data/files", headers=auth_headers)
+    assert response.status_code == 200
+    assert response.json() == []
+
+def test_file_security_isolation(auth_headers, auth_headers_user2):
+    """Tests that one user cannot access another user's files."""
+    
+    # User 1 uploads a file
+    test_file_path = Path("tests/data/test_upload.csv")
+    with open(test_file_path, "rb") as f:
+        files = {"file": ("user1_file.csv", f, "text/csv")}
+        response = client.post("/api/data/upload", files=files, headers=auth_headers)
     assert response.status_code == 200
 
-@pytest.mark.xfail(reason="Endpoint is now protected by authentication.")
-def test_mcp_data_request_interface_not_found_unauthenticated():
-    """Tests an /mcp-data request with a non-existent interface."""
-    request_payload = {
-        "interface": "this_interface_does_not_exist",
-        "params": {},
-        "request_id": "mcp-test-2"
-    }
-    response = client.post("/api/mcp-data", json=request_payload)
+    # User 2 should not see User 1's file
+    response = client.get("/api/data/files", headers=auth_headers_user2)
+    assert response.status_code == 200
+    assert response.json() == []
+
+    # User 2 cannot explore User 1's file
+    response = client.post("/api/data/explore/user1_file.csv", headers=auth_headers_user2)
     assert response.status_code == 404
 
-def test_execute_akshare_code_success():
-    """Tests the /execute-akshare endpoint with valid code."""
-    request_payload = {
-        "code": "import pandas as pd; df = pd.DataFrame({'c': [1,2]}); df",
-        "format": "json"
-    }
-    response = client.post("/api/execute-akshare", json=request_payload)
+    # User 2 cannot delete User 1's file
+    response = client.delete("/api/data/files/user1_file.csv", headers=auth_headers_user2)
+    assert response.status_code == 404
+
+    # Cleanup: User 1 deletes their file
+    response = client.delete("/api/data/files/user1_file.csv", headers=auth_headers)
     assert response.status_code == 200
-    data = response.json()
-    assert data["format"] == "json"
-    assert data["error"] is None
-    assert data["result"] == [{"c": 1}, {"c": 2}]

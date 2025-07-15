@@ -11,6 +11,16 @@ from adaptors.akshare import AKShareAdaptor
 logger = logging.getLogger("mcp-unified-service")
 akshare_adaptor = AKShareAdaptor()
 
+# Define a maximum data size limit (e.g., 10 MB) for fetched data
+MAX_DATA_SIZE_BYTES = 10 * 1024 * 1024  # 10 MB
+
+def _get_data_size(data: Any) -> int:
+    """Estimates the size of the data in bytes."""
+    if isinstance(data, pd.DataFrame):
+        return data.memory_usage(deep=True).sum()
+    # Add other type estimations if necessary, for now, this is the primary concern
+    return 0
+
 def _normalize_data(data: Any) -> List[Dict[str, Any]]:
     """
     Normalizes data from various AkShare return types into a list of dictionaries.
@@ -58,6 +68,15 @@ async def handle_mcp_data_request(
         
         # Call the AkShare adaptor
         raw_result = await akshare_adaptor.call(request.interface, **request.params)
+
+        # Check the size of the fetched data before proceeding
+        data_size = _get_data_size(raw_result)
+        if data_size > MAX_DATA_SIZE_BYTES:
+            raise HTTPException(
+                status_code=413,
+                detail=f"Fetched data size ({data_size / 1024 / 1024:.2f} MB) exceeds the limit "
+                       f"of {MAX_DATA_SIZE_BYTES / 1024 / 1024} MB. Please refine your query."
+            )
         
         # Normalize the raw result into a list of dictionaries
         all_data = _normalize_data(raw_result)
@@ -83,6 +102,9 @@ async def handle_mcp_data_request(
             status_code=404, 
             detail=f"Interface not found: '{request.interface}' is not a valid AkShare function."
         )
+    except HTTPException as e:
+        # Re-raise to preserve status code and details
+        raise e
     except Exception as e:
         logger.error(f"Error processing MCP request for interface '{request.interface}': {e}", exc_info=True)
         # Return a valid PaginatedDataResponse with an error payload

@@ -1,19 +1,22 @@
-# MCP 统一服务 - AkShare数据 + 量化回测 v3.0.0
+# MCP 统一服务 - AkShare数据 + 量化回测 v3.1.0
 
-一个统一的MCP (Microservice Control Protocol) 服务，提供两大核心功能：
+一个统一的MCP (Microservice Control Protocol) 服务，提供三大核心功能：
 1. **AkShare数据接口** - 通过标准化MCP协议访问中国金融市场数据
 2. **量化回测服务** - 基于Backtrader的策略回测和性能分析
+3. **用户文件管理** - 支持用户上传和管理自己的数据文件，用于浏览和分析
 
 ## 🚀 核心功能
 
 ### 📊 AkShare数据接口 (MCP协议)
 - **用户认证 (OAuth2/JWT)**: 通过Token保护核心API接口，确保服务安全。
 - **数据缓存**: 内置文件缓存机制，显著提升常用数据的响应速度。
-- 股票历史数据 (`stock_zh_a_hist`)
-- 基金信息 (`fund_em_open_fund_info`) 
-- 指数历史数据 (`index_zh_a_hist`)
-- 股票实时数据 (`stock_zh_a_spot_em`)
-- ETF实时数据 (`fund_etf_spot_em`)
+- **数据大小限制**: 对API获取的数据强制实施10MB的大小限制，防止服务过载。
+
+### 📂 数据管理与浏览 (新增)
+- **用户文件隔离**: 每个用户拥有独立的存储空间 (`static/cache/{username}`), 确保数据私密性。
+- **文件增删查**: 提供API和界面来上传、列出和删除用户自己的数据文件。
+- **在线数据浏览**: 支持在Web界面���直接浏览上传的CSV文件内容，支持分页。
+- **文件大小限制**: 上传文件限制为10MB以内。
 
 ### 🎯 量化回测服务
 - 策略文件上传和执行
@@ -30,81 +33,51 @@
 
 ### 本地部署
 ```bash
-# 启动服务
-python main.py
+# 1. 安装依赖
+pip install -r requirements.txt
 
-# 访问地址
-- Web界面: http://localhost:12001
-- API文档: http://localhost:12001/docs
+# 2. 创建一个初始用户
+python create_user.py --username your_user --password your_password
+
+# 3. 启动服务
+python main.py
 ```
 
 ## 📖 API接口
 
-所有API端点都以 `/api` 为前缀。
+所有API端点都以 `/api` 为前缀，并且大部分需要认证。
 
 ### 1. 认证接口
-```bash
-# 获取Token
-POST /api/token
+- `POST /api/token`: 获取Token。
+- `GET /api/users/me`: 获取当前用户信息。
 
-# 获取当前用户信息 (需要Token)
-GET /api/users/me
-```
+### 2. 数据获取 (API)
+- `POST /api/mcp-data`: 通过MCP协议从AkShare获取数据。
 
-### 2. MCP数据接口 (需要Token)
-```bash
-POST /api/mcp-data
-```
+### 3. 数据管理 (用户文件)
+- `POST /api/data/upload`: 上传一个数据文件 (CSV)。
+- `GET /api/data/files`: 列出当前用户所有已上传的��件。
+- `DELETE /api/data/files/{filename}`: 删除一个指定的文件。
+- `POST /api/data/explore/{filename}`: 浏览已上传文件的数据内容，支持分页。
 
-**请求示例**:
-```bash
-# 获取股票历史数据
-curl -X POST http://localhost:12001/api/mcp-data 
--H "Content-Type: application/json" 
--H "Authorization: Bearer <YOUR_TOKEN>" 
--d '{
-    "interface": "stock_zh_a_hist",
-    "params": {
-        "symbol": "000001", 
-        "period": "daily",
-        "start_date": "20241201",
-        "end_date": "20241210"
-    },
-    "request_id": "test001"
-}'
-```
+### 4. 回测接口
+- `POST /api/backtest-with-mcp`: 使用AkShare数据源进行回测。
 
-### 3. 回测接口 (需要Token)
-```bash
-POST /api/backtest
-```
-
-### 4. 代码回测接口 (需要Token)
-```bash
-POST /api/backtest-code
-```
-
-### 5. AkShare代码执行接口 (需要Token)
-```bash
-POST /api/execute-akshare
-```
-
-### 6. 数据源接口
-```bash
-GET /api/data-sources
-```
-
-获取可用的AkShare数据源列表。
+### 5. 系统接口
+- `GET /api/health`: 健康检查。
+- `GET /api/interfaces`: 获取可用的AkShare接口配置。
 
 ## 🖥️ Web界面功能
 
 一个功能完善的单页应用，提供以下功能：
 
 1. **用户认证** - 提供登录界面，管理访问权限。
-2. **回测** - 支持多种回测方式：
+2. **数据分析** - 分为两大模块：
+    - **数据获取**: 调用AkShare接口获取实时或历史数据。
+    - **我的数据文件**: 上传、管理和浏览用户自己的数据文件。
+3. **回测** - 支持多种回测方式：
     - 上传策略和数据文件。
     - 直接使用AkShare数据源进行回测。
-3. **MCP接口测试** - 提供UI界面方便地测试MCP数据接口。
 4. **结果展示** - 以图表和表格形式清晰地展示回测性能和数据。
 
 ## 🛠️ 安装和部署
@@ -122,7 +95,10 @@ cd akshare-mcp-adapter
 # 2. 安装依赖
 pip install -r requirements.txt
 
-# 3. 启动服务
+# 3. (重要) 创建一个初始用户
+python create_user.py --username your_user --password your_password
+
+# 4. 启动服务
 python main.py
 ```
 
@@ -131,47 +107,10 @@ python main.py
 # 构建镜像
 docker build -t mcp-unified-service .
 
-# 运行容器
+# 运行容器 (注意: Docker环境下的用户创建需要进入容器执行)
 docker run -p 12001:12001 mcp-unified-service
+# docker exec -it <container_id> python create_user.py --username user --password pass
 ```
-
-## 📊 支持的数据源
-
-### AkShare ETF数据
-- 黄金ETF (518880)
-- 纳指100 (513100)
-- 创业板100 (159915)
-- 上证180 (510180)
-- 沪深300ETF (510300)
-
-### AkShare指数数据
-- 上证指数 (000001)
-- 沪深300 (000300)
-- 中证500 (000905)
-- 深证成指 (399001)
-- 创业板指 (399006)
-
-## 📈 回测指标
-
-### 收益指标
-- 总收益率 (Total Return)
-- 年化收益率 (Annual Return)
-- 月度收益率 (Monthly Returns)
-
-### 风险指标
-- 夏普比率 (Sharpe Ratio)
-- 索提诺比率 (Sortino Ratio)
-- 最大回撤 (Max Drawdown)
-
-### 交易统计
-- 总交易次数 (Total Trades)
-- 胜率 (Win Rate)
-- 盈利因子 (Profit Factor)
-
-### 基准比较
-- Alpha系数
-- Beta系数
-- 信息比率 (Information Ratio)
 
 ## 🔧 开发和测试
 
@@ -179,72 +118,36 @@ docker run -p 12001:12001 mcp-unified-service
 ```
 ├── api/                  # API路由 (FastAPI)
 ├── handlers/             # 业务逻辑处理器
-├── core/                 # 核心功能 (回测引擎、MCP协议)
+├── core/                 # 核心功能 (回测引擎、MCP协议、安全)
 ├── models/               # 数据模型 (Pydantic)
 ├── static/               # Web界面 (HTML/JS/CSS)
+│   └── cache/            # 用户文件缓存目录
 ├── tests/                # 单元测试和集成测试
-│   ├── unit/             # 单元测试
-│   └── sample_strategies/ # 示例策略
-├── utils/                # 工具函数
-├── adaptors/             # 数据源适配器 (AkShare)
 ├── main.py               # 服务入口
-└── requirements.txt      # 依赖包
+└── create_user.py        # 用户创建脚本
 ```
 
 ### 运行测试
 项目包含一套完整的单元测试和集成测试，使用 `pytest` 框架。
 
 ```bash
-# 1. 安装测试依赖
-pip install pytest pytest-asyncio
-
-# 2. 运行测试
-pytest tests/
+# 运行所有测试
+pytest
 ```
-
-### 示例策略
-- `tests/sample_strategies/simple_ma_strategy.py` - 简单双均线策略
-- `tests/sample_strategies/rsi_strategy.py` - RSI超买超卖策略
 
 ## 📝 更新日志
 
-### v3.0.0 (最新)
+### v3.1.0 (最新)
+- ✨ **新增 数据管理功能**: 用户现在可以上传、删除和浏览自己的数据文件。
+- ✨ **新增 用户文件隔离**: 文件存储在 `static/cache/{username}` 目录下，确保用户数据私密性。
+- ✨ **新增 数据大小限制**: 对API获取和文件上传增加了10MB的限制，以保证服务性能。
+- ✨ **重构 数据分析界面**: 将“数据分析”功能拆分为“数据获取(API)”和“我的数据文件”两个子模块。
+- ✨ **完善 自动化测试**: 为新的文件管理API增加了完整的集成测试，并引入了用户认证测试流程。
+
+### v3.0.0
 - ✨ **新增 认证与授权**: 引入OAuth2/JWT保护核心API，提升服务安全性。
 - ✨ **新增 数据缓存机制**: 为AkShare接口增加文件缓存，大幅提升重复数据请求的响应速度。
 - ✨ **重构 Web用户界面**: `index.html` 全面升级为单页应用，支持用户登录、多种回测模式和交互式结果展示。
-- ✨ **优化 API数据格式**: 对MCP返回的数据进行统一规范化处理，确保输出格式的一致性。
-- ✨ **新增 单元测试**: 增加了对核心功能的单元测试。
-
-### v2.2.0
-- ✅ 新增AkShare代码执行接口，支持直接提交代码片段获取数据
-- ✅ 新增代码回测接口，只需提供策略代码即可使用AkShare数据进行回测
-- ✅ 添加示例策略文件，包括双均线策略和RSI策略
-- ✅ 优化数据处理逻辑，支持更多数据格式输出（JSON、CSV、HTML）
-
-### v2.1.0
-- ✅ 完全集成AkShare数据接口和回测功能
-- ✅ 新增"集成回测"标签页，直接使用AkShare数据进行回测
-- ✅ 优化数据缓存机制，提高回测速度
-- ✅ 支持股票、ETF和指数数据的统一访问
-
-### v2.0.0
-- ✅ 集成MCP协议端点
-- ✅ 统一AkShare数据访问和回测功能
-- ✅ 新增Web界面MCP测试标签页
-- ✅ 完善API文档和示例
-
-### v1.0.0
-- ✅ 基础回测服务
-- ✅ AkShare数据源集成
-- ✅ Web界面和API
-
-## 📄 许可证
-
-MIT License - 详见 [LICENSE](LICENSE) 文件
-
-## 🤝 贡献
-
-欢迎提交Issue和Pull Request来改进这个项目！
 
 ---
 
