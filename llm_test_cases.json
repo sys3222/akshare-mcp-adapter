@@ -1,0 +1,149 @@
+{
+  "test_cases": [
+    {
+      "id": "stock_analysis_basic",
+      "name": "基础股票分析",
+      "prompt": "分析000001平安银行最近的表现",
+      "expected_intent": "stock_analysis",
+      "expected_entities": ["000001", "平安银行"],
+      "expected_interfaces": ["stock_zh_a_hist", "stock_zh_a_spot_em"],
+      "description": "测试基本的股票分析功能"
+    },
+    {
+      "id": "market_overview",
+      "name": "市场概览",
+      "prompt": "今日A股市场整体表现如何？",
+      "expected_intent": "market_overview",
+      "expected_entities": ["A股", "今日"],
+      "expected_interfaces": ["stock_zh_a_spot_em", "index_zh_a_hist"],
+      "description": "测试市场整体分析功能"
+    },
+    {
+      "id": "financial_metrics",
+      "name": "财务指标分析",
+      "prompt": "000001的PE、PB、ROE等财务指标怎么样？",
+      "expected_intent": "financial_analysis",
+      "expected_entities": ["000001", "PE", "PB", "ROE"],
+      "expected_interfaces": ["stock_financial_analysis_indicator"],
+      "description": "测试财务指标分析功能"
+    },
+    {
+      "id": "trend_analysis",
+      "name": "趋势分析",
+      "prompt": "000001未来走势预测",
+      "expected_intent": "trend_analysis",
+      "expected_entities": ["000001", "未来走势"],
+      "expected_interfaces": ["stock_zh_a_hist"],
+      "description": "测试趋势分析和预测功能"
+    },
+    {
+      "id": "comparison_analysis",
+      "name": "对比分析",
+      "prompt": "000001和600519哪个投资价值更高？",
+      "expected_intent": "comparison_analysis",
+      "expected_entities": ["000001", "600519"],
+      "expected_interfaces": ["stock_zh_a_hist", "stock_financial_analysis_indicator"],
+      "description": "测试多股票对比分析功能"
+    },
+    {
+      "id": "investment_advice",
+      "name": "投资建议",
+      "prompt": "推荐一些值得投资的股票",
+      "expected_intent": "investment_advice",
+      "expected_entities": ["推荐", "投资"],
+      "expected_interfaces": ["stock_zh_a_spot_em"],
+      "description": "测试投资建议生成功能"
+    },
+    {
+      "id": "risk_assessment",
+      "name": "风险评估",
+      "prompt": "000001的投资风险如何？",
+      "expected_intent": "risk_assessment",
+      "expected_entities": ["000001", "投资风险"],
+      "expected_interfaces": ["stock_zh_a_hist", "stock_financial_analysis_indicator"],
+      "description": "测试风险评估功能"
+    },
+    {
+      "id": "complex_query",
+      "name": "复杂查询",
+      "prompt": "帮我分析一下科技板块最近的表现，特别是人工智能相关的股票",
+      "expected_intent": "sector_analysis",
+      "expected_entities": ["科技板块", "人工智能"],
+      "expected_interfaces": ["stock_board_concept_name_em", "stock_zh_a_spot_em"],
+      "description": "测试复杂的行业和概念分析"
+    },
+    {
+      "id": "macro_economic",
+      "name": "宏观经济",
+      "prompt": "最新的GDP数据对股市有什么影响？",
+      "expected_intent": "macro_analysis",
+      "expected_entities": ["GDP", "股市"],
+      "expected_interfaces": ["macro_china_gdp", "index_zh_a_hist"],
+      "description": "测试宏观经济分析功能"
+    },
+    {
+      "id": "technical_analysis",
+      "name": "技术分析",
+      "prompt": "000001的MACD和RSI指标显示什么信号？",
+      "expected_intent": "technical_analysis",
+      "expected_entities": ["000001", "MACD", "RSI"],
+      "expected_interfaces": ["stock_zh_a_hist"],
+      "description": "测试技术指标分析功能"
+    }
+  ],
+  "test_configuration": {
+    "api_base_url": "http://localhost:8000",
+    "endpoints": {
+      "llm_chat": "/api/llm/chat",
+      "llm_analyze": "/api/llm/analyze",
+      "llm_capabilities": "/api/llm/capabilities"
+    },
+    "authentication": {
+      "required": true,
+      "test_user": "test_user",
+      "test_password": "test_password"
+    },
+    "timeout_seconds": 30,
+    "retry_attempts": 3
+  },
+  "validation_criteria": {
+    "response_time_max_seconds": 15,
+    "min_response_length": 50,
+    "required_fields": ["response", "insights", "recommendations"],
+    "risk_levels": ["低风险", "中等风险", "高风险", "未知"],
+    "confidence_range": [0.0, 1.0]
+  },
+  "llm_specific_tests": [
+    {
+      "id": "llm_tool_calling",
+      "name": "LLM工具调用测试",
+      "prompt": "获取000001的最新股价",
+      "expected_behavior": "应该调用stock_zh_a_spot_em接口",
+      "validation": "检查是否正确调用了AkShare接口"
+    },
+    {
+      "id": "llm_data_analysis",
+      "name": "LLM数据分析测试",
+      "prompt": "分析000001过去一个月的价格趋势",
+      "expected_behavior": "应该获取历史数据并进行趋势分析",
+      "validation": "检查是否包含具体的数据分析结果"
+    },
+    {
+      "id": "llm_error_handling",
+      "name": "LLM错误处理测试",
+      "prompt": "分析一个不存在的股票代码999999",
+      "expected_behavior": "应该优雅地处理错误并给出提示",
+      "validation": "检查错误处理是否得当"
+    }
+  ],
+  "performance_benchmarks": {
+    "rule_based_mode": {
+      "expected_response_time_seconds": 2,
+      "expected_accuracy": 0.8
+    },
+    "llm_mode": {
+      "expected_response_time_seconds": 10,
+      "expected_accuracy": 0.9
+    }
+  }
+}
