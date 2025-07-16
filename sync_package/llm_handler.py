@@ -9,6 +9,8 @@ import logging
 import re
 import os
 from typing import Dict, Any, List, Optional, Tuple, Union
+from enum import Enum
+from dataclasses import dataclass
 import pandas as pd
 import numpy as np
 
@@ -26,25 +28,9 @@ except ImportError:
 
 from core.mcp_protocol import MCPRequest
 from handlers.mcp_handler import handle_mcp_data_request, _get_and_normalize_akshare_data
-from models.schemas import PaginatedDataResponse, IntentType, AnalysisContext, AnalysisResult
+from models.schemas import PaginatedDataResponse
 
 logger = logging.getLogger("mcp-unified-service")
-
-# 配置详细的日志格式
-def setup_llm_logging():
-    """设置LLM模块的详细日志"""
-    llm_logger = logging.getLogger("llm_handler")
-    if not llm_logger.handlers:
-        handler = logging.StreamHandler()
-        formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s'
-        )
-        handler.setFormatter(formatter)
-        llm_logger.addHandler(handler)
-        llm_logger.setLevel(logging.INFO)
-    return llm_logger
-
-llm_logger = setup_llm_logging()
 
 # --- LLM配置和工具定义 ---
 
@@ -171,7 +157,35 @@ def get_enhanced_system_instructions():
 # 全局LLM配置状态
 LLM_CONFIGURED = configure_llm() if LLM_AVAILABLE else False
 
-# 类定义已从models.schemas导入
+class IntentType(Enum):
+    """用户意图类型"""
+    STOCK_ANALYSIS = "stock_analysis"          # 股票分析
+    MARKET_OVERVIEW = "market_overview"        # 市场概览
+    FINANCIAL_METRICS = "financial_metrics"    # 财务指标
+    TREND_ANALYSIS = "trend_analysis"          # 趋势分析
+    COMPARISON = "comparison"                  # 对比分析
+    RECOMMENDATION = "recommendation"          # 投资建议
+    RISK_ASSESSMENT = "risk_assessment"        # 风险评估
+    UNKNOWN = "unknown"                        # 未知意图
+
+@dataclass
+class AnalysisContext:
+    """分析上下文"""
+    intent: IntentType
+    entities: Dict[str, Any]  # 提取的实体（股票代码、时间范围等）
+    confidence: float         # 意图识别置信度
+    raw_query: str           # 原始查询
+
+@dataclass
+class AnalysisResult:
+    """分析结果"""
+    summary: str                    # 分析摘要
+    insights: List[str]            # 关键洞察
+    recommendations: List[str]      # 建议
+    data_points: Dict[str, Any]    # 关键数据点
+    charts_suggested: List[str]    # 建议的图表类型
+    risk_level: str               # 风险等级
+    confidence: float             # 分析置信度
 
 class LLMAnalysisHandler:
     """增强的LLM智能分析处理器
@@ -203,10 +217,7 @@ class LLMAnalysisHandler:
                 r"([0-9]{6}).*?怎么样",
                 r"([0-9]{6}).*?表现",
                 r"查看.*?([0-9]{6})",
-                r"([\u4e00-\u9fa5]+).*?股票.*?分析",
-                r"分析.*?([\u4e00-\u9fa5]+银行)",
-                r"([0-9]{6}).*?值得.*?投资",
-                r"([\u4e00-\u9fa5]+).*?([0-9]{6})"
+                r"([\u4e00-\u9fa5]+).*?股票.*?分析"
             ],
             IntentType.MARKET_OVERVIEW: [
                 r"市场.*?概况",
@@ -217,15 +228,11 @@ class LLMAnalysisHandler:
             ],
             IntentType.FINANCIAL_METRICS: [
                 r"财务.*?指标",
-                r"PE.*?ROE",
                 r"PE.*?PB",
                 r"市盈率",
                 r"净资产收益率",
                 r"ROE",
-                r"财报.*?数据",
-                r"([0-9]{6}).*?PE.*?ROE",
-                r"([0-9]{6}).*?财务",
-                r"([0-9]{6}).*?的.*?PE.*?ROE"
+                r"财报.*?数据"
             ],
             IntentType.TREND_ANALYSIS: [
                 r"趋势.*?分析",
@@ -234,16 +241,13 @@ class LLMAnalysisHandler:
                 r"未来.*?走向",
                 r"预测.*?走势"
             ],
-            IntentType.COMPARISON_ANALYSIS: [
+            IntentType.COMPARISON: [
                 r"对比.*?([0-9]{6}).*?([0-9]{6})",
                 r"比较.*?([0-9]{6}).*?([0-9]{6})",
                 r"([0-9]{6}).*?vs.*?([0-9]{6})",
-                r"哪个.*?更好",
-                r"对比分析.*?([0-9]{6})",
-                r"帮我.*?对比.*?([0-9]{6}).*?([0-9]{6})",
-                r"([0-9]{6}).*?和.*?([0-9]{6}).*?哪个.*?值得"
+                r"哪个.*?更好"
             ],
-            IntentType.INVESTMENT_ADVICE: [
+            IntentType.RECOMMENDATION: [
                 r"推荐.*?股票",
                 r"买入.*?建议",
                 r"投资.*?建议",
@@ -603,8 +607,15 @@ class LLMAnalysisHandler:
         charts_suggested = []
 
         if not data_responses:
-            # 使用改进的降级策略
-            return await self._generate_fallback_analysis(context)
+            return AnalysisResult(
+                summary="未获取到相关数据",
+                insights=["数据获取失败"],
+                recommendations=[],
+                data_points={},
+                charts_suggested=[],
+                risk_level="未知",
+                confidence=0.0
+            )
 
         # 分析每个数据响应
         for response in data_responses:
@@ -623,15 +634,6 @@ class LLMAnalysisHandler:
                 elif context.intent == IntentType.FINANCIAL_METRICS:
                     insights.extend(self._analyze_financial_data(df, data_points))
                     charts_suggested.extend(["财务指标雷达图", "同行对比图"])
-
-        # 确保总是有洞察，即使没有实际数据
-        if not insights:
-            insights = self._generate_default_insights(context)
-
-        # 如果洞察仍然不足，补充更多内容
-        if len(insights) < 2:
-            additional_insights = self._generate_additional_insights(context, data_points)
-            insights.extend(additional_insights)
 
         # 生成分析摘要
         summary = self._generate_summary(context, insights, data_points)
@@ -724,9 +726,7 @@ class LLMAnalysisHandler:
                 total_count = len(change_pct)
 
                 rising_ratio = rising_count / total_count * 100
-                falling_ratio = falling_count / total_count * 100
                 data_points['rising_ratio'] = round(rising_ratio, 1)
-                data_points['falling_ratio'] = round(falling_ratio, 1)
 
                 if rising_ratio > 70:
                     insights.append(f"市场情绪乐观，{rising_ratio:.1f}%的股票上涨")
@@ -826,11 +826,6 @@ class LLMAnalysisHandler:
     def _assess_risk_level(self, context: AnalysisContext, data_points: Dict[str, Any]) -> str:
         """评估风险等级"""
         risk_score = 0
-
-        # 根据上下文调整风险评估
-        if context and context.intent == IntentType.STOCK_ANALYSIS:
-            # 股票分析的风险评估更严格
-            risk_score += 1
 
         # 基于波动率评估风险
         if 'volatility' in data_points:
@@ -974,284 +969,12 @@ class LLMAnalysisHandler:
 
     def _generate_general_recommendations(self, analysis_result: AnalysisResult) -> List[str]:
         """生成通用建议"""
-        recommendations = [
+        return [
             "📊 建议结合多个维度的数据进行综合分析",
             "⏰ 保持长期投资视角，避免短期情绪化操作",
             "🎯 根据个人风险承受能力制定投资策略",
             "📚 持续学习和关注市场动态"
         ]
-
-        # 根据分析结果调整建议
-        if analysis_result.confidence > 0.8:
-            recommendations.append("✅ 分析结果置信度较高，可作为参考")
-        elif analysis_result.confidence < 0.5:
-            recommendations.append("⚠️ 分析结果置信度较低，建议谨慎参考")
-
-        return recommendations
-
-    def _generate_default_insights(self, context: AnalysisContext) -> List[str]:
-        """生成默认洞察，确保总是有内容"""
-        insights = []
-
-        if context.intent == IntentType.STOCK_ANALYSIS:
-            stock_codes = context.entities.get('stock_codes', [])
-            if stock_codes:
-                stock_code = stock_codes[0]
-                insights.extend([
-                    f"已识别股票代码: {stock_code}",
-                    f"股票{stock_code}属于A股市场，建议关注其基本面表现",
-                    "当前市场环境下，建议重点关注公司的盈利能力和成长性",
-                    "技术面分析需要结合更多历史数据进行综合判断"
-                ])
-            else:
-                insights.extend([
-                    "股票分析需要明确的标的代码",
-                    "建议提供具体的股票代码以获得更准确的分析",
-                    "A股市场有4000+只股票，精准分析需要具体标的"
-                ])
-
-        elif context.intent == IntentType.MARKET_OVERVIEW:
-            insights.extend([
-                "A股市场整体呈现结构性分化特征",
-                "当前宏观环境对市场情绪有重要影响",
-                "建议关注政策导向和资金流向变化",
-                "优质蓝筹股和成长股仍具备长期配置价值"
-            ])
-
-        elif context.intent == IntentType.FINANCIAL_METRICS:
-            insights.extend([
-                "财务指标是评估公司价值的重要工具",
-                "PE、PB、ROE等指标需要结合行业平均水平分析",
-                "财务数据的趋势比单一时点数据更有参考价值",
-                "建议结合现金流量表进行综合分析"
-            ])
-
-        elif context.intent == IntentType.COMPARISON_ANALYSIS:
-            insights.extend([
-                "股票对比分析需要从多个维度进行评估",
-                "建议从基本面、技术面、估值面进行综合对比",
-                "同行业对比更具参考价值",
-                "风险收益比是选择的重要考量因素"
-            ])
-
-        elif context.intent == IntentType.INVESTMENT_ADVICE:
-            insights.extend([
-                "投资建议需要结合个人风险偏好制定",
-                "分散投资是降低风险的有效策略",
-                "长期投资通常比短期投机更稳健",
-                "建议定期评估和调整投资组合"
-            ])
-
-        elif context.intent == IntentType.RISK_ASSESSMENT:
-            insights.extend([
-                "投资风险来源于多个方面：市场风险、行业风险、个股风险",
-                "风险评估需要考虑投资者的风险承受能力",
-                "适当的风险管理措施可以有效控制损失",
-                "建议设置止损点和目标收益点"
-            ])
-
-        else:
-            insights.extend([
-                "金融市场分析需要综合考虑多种因素",
-                "建议关注宏观经济、行业趋势和公司基本面",
-                "理性投资，避免情绪化决策"
-            ])
-
-        return insights[:4]  # 限制数量，避免过多
-
-    def _generate_additional_insights(self, context: AnalysisContext, data_points: Dict[str, Any]) -> List[str]:
-        """生成额外的洞察补充"""
-        additional = []
-
-        # 基于数据点生成洞察
-        if data_points:
-            if 'price_change_pct' in data_points:
-                change = data_points['price_change_pct']
-                if change > 5:
-                    additional.append(f"价格涨幅{change:.1f}%，表现较为强势")
-                elif change < -5:
-                    additional.append(f"价格跌幅{change:.1f}%，需要关注风险")
-                else:
-                    additional.append("价格波动相对温和，走势较为稳定")
-
-            if 'volatility' in data_points:
-                vol = data_points['volatility']
-                if vol > 3:
-                    additional.append("波动率较高，适合风险偏好较强的投资者")
-                else:
-                    additional.append("波动率适中，风险相对可控")
-
-        # 基于意图生成通用洞察
-        if context.intent == IntentType.STOCK_ANALYSIS:
-            additional.extend([
-                "建议关注公司的核心竞争力和护城河",
-                "行业地位和市场份额是重要考量因素"
-            ])
-        elif context.intent == IntentType.MARKET_OVERVIEW:
-            additional.extend([
-                "市场情绪和资金流向值得密切关注",
-                "国际市场动态对A股也有重要影响"
-            ])
-
-        return additional[:2]  # 限制补充数量
-
-    async def _generate_fallback_analysis(self, context: AnalysisContext) -> AnalysisResult:
-        """生成降级分析结果，当数据获取失败时使用"""
-        # 生成基础洞察
-        insights = self._generate_default_insights(context)
-
-        # 生成基础建议
-        recommendations = self._generate_fallback_recommendations(context)
-
-        # 生成摘要
-        summary = self._generate_fallback_summary(context)
-
-        # 设置数据点
-        data_points = {
-            "analysis_mode": "fallback",
-            "data_availability": "limited",
-            "confidence_level": "基础分析"
-        }
-
-        # 建议图表
-        charts_suggested = self._get_suggested_charts(context)
-
-        # 评估风险等级
-        risk_level = self._get_fallback_risk_level(context)
-
-        # 设置置信度
-        confidence = self._calculate_fallback_confidence(context)
-
-        return AnalysisResult(
-            summary=summary,
-            insights=insights,
-            recommendations=recommendations,
-            data_points=data_points,
-            charts_suggested=charts_suggested,
-            risk_level=risk_level,
-            confidence=confidence
-        )
-
-    def _generate_fallback_recommendations(self, context: AnalysisContext) -> List[str]:
-        """生成降级模式下的建议"""
-        recommendations = []
-
-        if context.intent == IntentType.STOCK_ANALYSIS:
-            stock_codes = context.entities.get('stock_codes', [])
-            if stock_codes:
-                stock_code = stock_codes[0]
-                recommendations.extend([
-                    f"建议通过多个渠道获取{stock_code}的最新数据",
-                    "关注公司基本面信息：财务报表、行业地位、竞争优势",
-                    "技术面分析：关注价格趋势、成交量变化、技术指标",
-                    "风险控制：设置合理的止损点，控制仓位大小"
-                ])
-            else:
-                recommendations.extend([
-                    "请提供具体的股票代码以获得更精准的分析",
-                    "建议关注优质蓝筹股和成长股",
-                    "分散投资，降低单一股票风险"
-                ])
-
-        elif context.intent == IntentType.MARKET_OVERVIEW:
-            recommendations.extend([
-                "关注主要指数走势：上证指数、深证成指、创业板指",
-                "观察市场情绪指标：成交量、涨跌比例、资金流向",
-                "关注政策面变化和宏观经济数据",
-                "保持理性投资心态，避免追涨杀跌"
-            ])
-
-        elif context.intent == IntentType.FINANCIAL_METRICS:
-            recommendations.extend([
-                "重点关注PE、PB、ROE、ROA等核心财务指标",
-                "对比同行业平均水平进行相对估值",
-                "关注财务数据的趋势变化，而非单一时点数据",
-                "结合现金流量表分析公司的真实盈利质量"
-            ])
-
-        elif context.intent == IntentType.INVESTMENT_ADVICE:
-            recommendations.extend([
-                "制定明确的投资目标和风险承受能力评估",
-                "采用分散投资策略，不要把鸡蛋放在一个篮子里",
-                "长期投资通常比短期投机更稳健",
-                "定期评估和调整投资组合"
-            ])
-
-        else:
-            recommendations.extend([
-                "建议进一步明确分析需求",
-                "关注市场基本面和技术面的综合分析",
-                "保持理性投资心态"
-            ])
-
-        return recommendations[:4]  # 限制数量
-
-    def _generate_fallback_summary(self, context: AnalysisContext) -> str:
-        """生成降级模式下的摘要"""
-        if context.intent == IntentType.STOCK_ANALYSIS:
-            stock_codes = context.entities.get('stock_codes', [])
-            if stock_codes:
-                return f"正在分析股票{stock_codes[0]}，当前基于基础分析框架提供投资参考"
-            else:
-                return "股票分析需要明确的标的代码，建议提供具体股票代码"
-
-        elif context.intent == IntentType.MARKET_OVERVIEW:
-            return "A股市场整体分析：建议关注主要指数走势和市场情绪变化"
-
-        elif context.intent == IntentType.FINANCIAL_METRICS:
-            return "财务指标分析：重点关注估值指标和盈利能力指标"
-
-        elif context.intent == IntentType.COMPARISON_ANALYSIS:
-            return "对比分析：建议从基本面、技术面、估值面进行多维度比较"
-
-        elif context.intent == IntentType.INVESTMENT_ADVICE:
-            return "投资建议：基于风险收益平衡原则，提供个性化投资策略"
-
-        elif context.intent == IntentType.RISK_ASSESSMENT:
-            return "风险评估：全面分析投资风险，制定相应的风险管理策略"
-
-        else:
-            return "基于当前信息提供基础分析，建议获取更多数据以提升分析精度"
-
-    def _get_suggested_charts(self, context: AnalysisContext) -> List[str]:
-        """获取建议的图表类型"""
-        if context.intent == IntentType.STOCK_ANALYSIS:
-            return ["K线图", "成交量图", "技术指标图", "财务指标图"]
-        elif context.intent == IntentType.MARKET_OVERVIEW:
-            return ["市场热力图", "行业分布图", "涨跌分布图", "资金流向图"]
-        elif context.intent == IntentType.FINANCIAL_METRICS:
-            return ["财务指标雷达图", "同行对比图", "趋势分析图"]
-        elif context.intent == IntentType.COMPARISON_ANALYSIS:
-            return ["对比分析图", "相关性分析图", "风险收益散点图"]
-        else:
-            return ["综合分析图", "趋势图"]
-
-    def _get_fallback_risk_level(self, context: AnalysisContext) -> str:
-        """获取降级模式下的风险等级"""
-        if context.intent == IntentType.STOCK_ANALYSIS:
-            return "中等风险"
-        elif context.intent == IntentType.MARKET_OVERVIEW:
-            return "中等风险"
-        elif context.intent == IntentType.INVESTMENT_ADVICE:
-            return "风险等级待评估"
-        else:
-            return "中等风险"
-
-    def _calculate_fallback_confidence(self, context: AnalysisContext) -> float:
-        """计算降级模式下的置信度"""
-        base_confidence = 0.6
-
-        # 根据实体识别质量调整
-        if context.entities and len(context.entities) > 0:
-            base_confidence += 0.1
-
-        # 根据意图识别置信度调整
-        if context.confidence > 0.8:
-            base_confidence += 0.1
-        elif context.confidence < 0.5:
-            base_confidence -= 0.1
-
-        return min(max(base_confidence, 0.3), 0.8)  # 限制在0.3-0.8之间
 
 # 创建全局实例
 # 优先使用LLM模式，如果不可用则回退到规则模式

@@ -1,0 +1,151 @@
+{
+  "timestamp": "2025-07-16T20:56:38.163354",
+  "summary": {
+    "total_tests": 8,
+    "successful_tests": 8,
+    "average_score": 7.270833333333334,
+    "average_time": 0.026173323392868042
+  },
+  "detailed_results": [
+    {
+      "test_id": "stock_basic_001",
+      "category": "股票分析",
+      "query": "分析000001平安银行",
+      "success": true,
+      "execution_time": 0.013382911682128906,
+      "result_summary": "对目标股票的分析显示，需要更多数据来做出准确判断。",
+      "insights_count": 0,
+      "recommendations_count": 1,
+      "confidence": 0.8,
+      "risk_level": "低风险",
+      "score": 7.0,
+      "max_score": 10,
+      "issues": [
+        "洞察数量不足: 0"
+      ],
+      "keyword_coverage": 1
+    },
+    {
+      "test_id": "stock_basic_002",
+      "category": "股票分析",
+      "query": "000001怎么样？值得投资吗？",
+      "success": true,
+      "execution_time": 0.0,
+      "result_summary": "对目标股票的分析显示，需要更多数据来做出准确判断。",
+      "insights_count": 0,
+      "recommendations_count": 1,
+      "confidence": 0.8,
+      "risk_level": "低风险",
+      "score": 5.666666666666667,
+      "max_score": 10,
+      "issues": [
+        "洞察数量不足: 0",
+        "建议数量不足: 1"
+      ],
+      "keyword_coverage": 1
+    },
+    {
+      "test_id": "market_001",
+      "category": "市场概览",
+      "query": "今日A股市场表现如何？",
+      "success": true,
+      "execution_time": 0.09768438339233398,
+      "result_summary": "当前市场整体情绪乐观，100.0%的股票实现上涨。市场活跃度较高。",
+      "insights_count": 2,
+      "recommendations_count": 4,
+      "confidence": 0.8,
+      "risk_level": "低风险",
+      "score": 8.666666666666668,
+      "max_score": 10,
+      "issues": [],
+      "keyword_coverage": 1
+    },
+    {
+      "test_id": "market_002",
+      "category": "市场概览",
+      "query": "整体市场走势怎么样？",
+      "success": true,
+      "execution_time": 0.09809517860412598,
+      "result_summary": "当前市场整体情绪乐观，100.0%的股票实现上涨。市场活跃度较高。",
+      "insights_count": 2,
+      "recommendations_count": 4,
+      "confidence": 0.8,
+      "risk_level": "低风险",
+      "score": 9.333333333333334,
+      "max_score": 10,
+      "issues": [],
+      "keyword_coverage": 2
+    },
+    {
+      "test_id": "financial_001",
+      "category": "财务指标",
+      "query": "000001的PE和ROE怎么样？",
+      "success": true,
+      "execution_time": 0.0,
+      "result_summary": "对目标股票的分析显示，需要更多数据来做出准确判断。",
+      "insights_count": 0,
+      "recommendations_count": 1,
+      "confidence": 0.8,
+      "risk_level": "低风险",
+      "score": 4.5,
+      "max_score": 10,
+      "issues": [
+        "意图识别错误: 期望IntentType.FINANCIAL_METRICS, 实际IntentType.STOCK_ANALYSIS",
+        "洞察数量不足: 0"
+      ],
+      "keyword_coverage": 0
+    },
+    {
+      "test_id": "complex_001",
+      "category": "复杂查询",
+      "query": "帮我对比分析000001和600519，哪个更值得投资？",
+      "success": true,
+      "execution_time": 0.0,
+      "result_summary": "对目标股票的分析显示，需要更多数据来做出准确判断。",
+      "insights_count": 0,
+      "recommendations_count": 1,
+      "confidence": 0.8,
+      "risk_level": "低风险",
+      "score": 3.0,
+      "max_score": 10,
+      "issues": [
+        "意图识别错误: 期望IntentType.COMPARISON_ANALYSIS, 实际IntentType.STOCK_ANALYSIS",
+        "洞察数量不足: 0",
+        "建议数量不足: 1"
+      ],
+      "keyword_coverage": 0
+    },
+    {
+      "test_id": "edge_001",
+      "category": "边界情况",
+      "query": "随机文本测试",
+      "success": true,
+      "execution_time": 0.0,
+      "result_summary": "数据获取中，请稍后重试",
+      "insights_count": 1,
+      "recommendations_count": 6,
+      "confidence": 0.3,
+      "risk_level": "未知",
+      "score": 10.0,
+      "max_score": 10,
+      "issues": [],
+      "keyword_coverage": "N/A"
+    },
+    {
+      "test_id": "edge_002",
+      "category": "边界情况",
+      "query": "",
+      "success": true,
+      "execution_time": 0.00022411346435546875,
+      "result_summary": "数据获取中，请稍后重试",
+      "insights_count": 1,
+      "recommendations_count": 6,
+      "confidence": 0.3,
+      "risk_level": "未知",
+      "score": 10.0,
+      "max_score": 10,
+      "issues": [],
+      "keyword_coverage": "N/A"
+    }
+  ]
+}

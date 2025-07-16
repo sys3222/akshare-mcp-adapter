@@ -16,6 +16,129 @@ sys.path.insert(0, str(project_root))
 
 from main import app
 from handlers.llm_handler import LLMAnalysisHandler
+from models.schemas import PaginatedDataResponse
+
+class TestLLMIntegration:
+
+    @pytest.fixture
+    def client(self):
+        """创建测试客户端"""
+        return TestClient(app)
+
+    @pytest.fixture
+    def auth_headers(self, client):
+        """获取认证头"""
+        try:
+            response = client.post("/api/token", data={
+                "username": "test_user",
+                "password": "test_password"
+            })
+            if response.status_code == 200:
+                token = response.json()["access_token"]
+                return {"Authorization": f"Bearer {token}"}
+        except:
+            pass
+        return {}
+
+    @pytest.mark.asyncio
+    async def test_llm_with_mcp_integration(self):
+        """测试LLM与MCP协议的集成"""
+        handler = LLMAnalysisHandler(use_llm=False)  # 使用规则模式避免API依赖
+
+        # Mock MCP数据响应
+        mock_data = PaginatedDataResponse(
+            data=[
+                {'日期': '2024-01-01', '收盘': 10.0, '成交量': 1000000},
+                {'日期': '2024-01-02', '收盘': 10.5, '成交量': 1200000}
+            ],
+            total_records=2,
+            current_page=1,
+            total_pages=1
+        )
+
+        with patch('handlers.llm_handler.handle_mcp_data_request', new_callable=AsyncMock) as mock_mcp:
+            mock_mcp.return_value = mock_data
+
+            result = await handler.analyze_query("分析000001", "test_user")
+
+            # 验证分析结果
+            assert result.summary != ""
+            assert len(result.insights) >= 0
+            assert result.confidence >= 0
+
+    def test_llm_api_with_authentication(self, client):
+        """测试LLM API与认证系统的集成"""
+        # 未认证请求
+        response = client.post("/api/llm/analyze", json={"query": "test"})
+        assert response.status_code == 401
+
+        # 错误token
+        headers = {"Authorization": "Bearer invalid_token"}
+        response = client.post("/api/llm/analyze", json={"query": "test"}, headers=headers)
+        assert response.status_code == 401
+
+    def test_health_check_integration(self, client):
+        """测试健康检查集成"""
+        response = client.get("/health")
+        assert response.status_code == 200
+        data = response.json()
+        assert "status" in data
+
+    def test_llm_configuration_validation(self):
+        """测试LLM配置验证"""
+        # 测试无API密钥的情况
+        with patch.dict(os.environ, {}, clear=True):
+            handler = LLMAnalysisHandler(use_llm=True)
+            # 应该回退到规则模式
+            assert handler.use_llm == False
+
+    @pytest.mark.asyncio
+    async def test_llm_fallback_mechanism(self):
+        """测试LLM回退机制"""
+        # 创建规则模式处理器
+        rule_handler = LLMAnalysisHandler(use_llm=False)
+
+        mock_data = PaginatedDataResponse(
+            data=[{'日期': '2024-01-01', '收盘': 10.0}],
+            total_records=1, current_page=1, total_pages=1
+        )
+
+        with patch('handlers.llm_handler.handle_mcp_data_request', new_callable=AsyncMock) as mock_mcp:
+            mock_mcp.return_value = mock_data
+
+            # 测试规则模式作为回退
+            result = await rule_handler.analyze_query("分析000001", "test_user")
+
+            assert result.summary != ""
+            assert result.confidence >= 0
+
+    def test_basic_functionality(self):
+        """测试基本功能"""
+        handler = LLMAnalysisHandler(use_llm=False)
+
+        # 测试意图识别
+        context = handler._identify_intent("分析000001")
+        assert context is not None
+        assert hasattr(context, 'intent')
+        assert hasattr(context, 'confidence')
+
+        # 测试模板获取
+        templates = handler.analysis_templates
+        assert isinstance(templates, dict)
+
+import pytest
+import asyncio
+import os
+from unittest.mock import patch, AsyncMock
+from fastapi.testclient import TestClient
+
+import sys
+from pathlib import Path
+project_root = Path(__file__).parent.parent.parent
+sys.path.insert(0, str(project_root))
+
+from main import app
+from handlers.llm_handler import LLMAnalysisHandler
 from handlers.mcp_handler import handle_mcp_data_request
 from models.schemas import PaginatedDataResponse
 

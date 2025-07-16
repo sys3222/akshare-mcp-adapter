@@ -1,0 +1,1840 @@
+{
+  "timestamp": "2025-07-16T21:30:03.417262",
+  "summary": {
+    "total_tests": 65,
+    "successful_tests": 65,
+    "average_score": 7.233846153846154,
+    "total_execution_time": 22.561622858047485
+  },
+  "detailed_results": [
+    {
+      "test_id": "stock_analysis_basic_001",
+      "name": "基础股票分析-平安银行",
+      "category": "股票分析",
+      "priority": "high",
+      "query": "分析000001平安银行最近的表现",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.014832735061645508,
+      "result_summary": "股票分析需要明确的标的代码，建议提供具体股票代码",
+      "insights_count": 3,
+      "recommendations_count": 1,
+      "confidence": 0.7999999999999999,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "stock_analysis_basic_002",
+      "name": "基础股票分析-贵州茅台",
+      "category": "股票分析",
+      "priority": "high",
+      "query": "600519贵州茅台怎么样？",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.0,
+      "result_summary": "股票分析需要明确的标的代码，建议提供具体股票代码",
+      "insights_count": 3,
+      "recommendations_count": 1,
+      "confidence": 0.7999999999999999,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "stock_analysis_basic_003",
+      "name": "基础股票分析-简短查询",
+      "category": "股票分析",
+      "priority": "medium",
+      "query": "000002怎么样",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.0,
+      "result_summary": "股票分析需要明确的标的代码，建议提供具体股票代码",
+      "insights_count": 3,
+      "recommendations_count": 1,
+      "confidence": 0.7999999999999999,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "stock_analysis_investment_001",
+      "name": "投资价值分析",
+      "category": "股票分析",
+      "priority": "high",
+      "query": "000001值得投资吗？风险大不大？",
+      "success": true,
+      "score": 9.166666666666666,
+      "execution_time": 0.0,
+      "result_summary": "股票分析需要明确的标的代码，建议提供具体股票代码",
+      "insights_count": 3,
+      "recommendations_count": 1,
+      "confidence": 0.7999999999999999,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "stock_analysis_performance_001",
+      "name": "股票表现分析",
+      "category": "股票分析",
+      "priority": "medium",
+      "query": "查看000858五粮液最近一个月的表现",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.00048065185546875,
+      "result_summary": "股票分析需要明确的标的代码，建议提供具体股票代码",
+      "insights_count": 3,
+      "recommendations_count": 1,
+      "confidence": 0.7999999999999999,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "market_overview_001",
+      "name": "市场概览-今日",
+      "category": "市场概览",
+      "priority": "high",
+      "query": "今日A股市场整体表现如何？",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.10651755332946777,
+      "result_summary": "当前市场整体情绪乐观，100.0%的股票实现上涨。市场活跃度较高。",
+      "insights_count": 2,
+      "recommendations_count": 4,
+      "confidence": 0.8,
+      "risk_level": "低风险"
+    },
+    {
+      "test_id": "market_overview_002",
+      "name": "市场概览-大盘",
+      "category": "市场概览",
+      "priority": "high",
+      "query": "大盘情况怎么样？",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.08359479904174805,
+      "result_summary": "当前市场整体情绪乐观，100.0%的股票实现上涨。市场活跃度较高。",
+      "insights_count": 2,
+      "recommendations_count": 4,
+      "confidence": 0.8,
+      "risk_level": "低风险"
+    },
+    {
+      "test_id": "market_overview_003",
+      "name": "市场概览-整体走势",
+      "category": "市场概览",
+      "priority": "medium",
+      "query": "整体市场走势如何？有什么投资机会？",
+      "success": true,
+      "score": 8.833333333333332,
+      "execution_time": 0.08226585388183594,
+      "result_summary": "当前市场整体情绪乐观，100.0%的股票实现上涨。市场活跃度较高。",
+      "insights_count": 2,
+      "recommendations_count": 4,
+      "confidence": 0.8,
+      "risk_level": "低风险"
+    },
+    {
+      "test_id": "financial_metrics_001",
+      "name": "财务指标分析-PE ROE",
+      "category": "财务指标",
+      "priority": "high",
+      "query": "000001的PE、PB、ROE等财务指标怎么样？",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.0,
+      "result_summary": "股票分析需要明确的标的代码，建议提供具体股票代码",
+      "insights_count": 3,
+      "recommendations_count": 1,
+      "confidence": 0.7999999999999999,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "financial_metrics_002",
+      "name": "财务指标分析-市盈率",
+      "category": "财务指标",
+      "priority": "medium",
+      "query": "600519的市盈率高不高？",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.0005085468292236328,
+      "result_summary": "财务指标分析：重点关注估值指标和盈利能力指标",
+      "insights_count": 4,
+      "recommendations_count": 2,
+      "confidence": 0.6,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "financial_metrics_003",
+      "name": "财务指标分析-ROE",
+      "category": "财务指标",
+      "priority": "medium",
+      "query": "000002万科A的ROE怎么样？",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.0,
+      "result_summary": "股票分析需要明确的标的代码，建议提供具体股票代码",
+      "insights_count": 3,
+      "recommendations_count": 1,
+      "confidence": 0.7999999999999999,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "comparison_analysis_001",
+      "name": "对比分析-两只股票",
+      "category": "对比分析",
+      "priority": "high",
+      "query": "000001和600519哪个投资价值更高？",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.0005207061767578125,
+      "result_summary": "股票分析需要明确的标的代码，建议提供具体股票代码",
+      "insights_count": 3,
+      "recommendations_count": 1,
+      "confidence": 0.7999999999999999,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "comparison_analysis_002",
+      "name": "对比分析-银行股",
+      "category": "对比分析",
+      "priority": "high",
+      "query": "帮我对比分析000001平安银行和600036招商银行",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.0,
+      "result_summary": "股票分析需要明确的标的代码，建议提供具体股票代码",
+      "insights_count": 3,
+      "recommendations_count": 1,
+      "confidence": 0.7999999999999999,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "comparison_analysis_003",
+      "name": "对比分析-白酒股",
+      "category": "对比分析",
+      "priority": "medium",
+      "query": "600519和000858哪个更值得长期持有？",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.0005078315734863281,
+      "result_summary": "股票分析需要明确的标的代码，建议提供具体股票代码",
+      "insights_count": 3,
+      "recommendations_count": 1,
+      "confidence": 0.7999999999999999,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "trend_analysis_001",
+      "name": "趋势分析-未来走势",
+      "category": "趋势分析",
+      "priority": "medium",
+      "query": "000001未来走势预测",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.0,
+      "result_summary": "基于当前信息提供基础分析，建议获取更多数据以提升分析精度",
+      "insights_count": 3,
+      "recommendations_count": 5,
+      "confidence": 0.5,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "trend_analysis_002",
+      "name": "趋势分析-技术走势",
+      "category": "趋势分析",
+      "priority": "medium",
+      "query": "600519的技术走势如何？",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.0,
+      "result_summary": "基于当前信息提供基础分析，建议获取更多数据以提升分析精度",
+      "insights_count": 3,
+      "recommendations_count": 5,
+      "confidence": 0.6,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "investment_advice_001",
+      "name": "投资建议-推荐股票",
+      "category": "投资建议",
+      "priority": "high",
+      "query": "推荐一些值得投资的股票",
+      "success": true,
+      "score": 8.0,
+      "execution_time": 0.0,
+      "result_summary": "投资建议：基于风险收益平衡原则，提供个性化投资策略",
+      "insights_count": 4,
+      "recommendations_count": 5,
+      "confidence": 0.6,
+      "risk_level": "风险等级待评估"
+    },
+    {
+      "test_id": "investment_advice_002",
+      "name": "投资建议-买入时机",
+      "category": "投资建议",
+      "priority": "high",
+      "query": "现在是买入000001的好时机吗？",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.0,
+      "result_summary": "股票分析需要明确的标的代码，建议提供具体股票代码",
+      "insights_count": 3,
+      "recommendations_count": 1,
+      "confidence": 0.7999999999999999,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "risk_assessment_001",
+      "name": "风险评估-投资风险",
+      "category": "风险评估",
+      "priority": "high",
+      "query": "000001的投资风险如何？",
+      "success": true,
+      "score": 9.0,
+      "execution_time": 0.0,
+      "result_summary": "风险评估：全面分析投资风险，制定相应的风险管理策略",
+      "insights_count": 4,
+      "recommendations_count": 5,
+      "confidence": 0.6,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "risk_assessment_002",
+      "name": "风险评估-安全性",
+      "category": "风险评估",
+      "priority": "medium",
+      "query": "600519投资安全吗？风险大不大？",
+      "success": true,
+      "score": 8.833333333333332,
+      "execution_time": 0.0,
+      "result_summary": "风险评估：全面分析投资风险，制定相应的风险管理策略",
+      "insights_count": 4,
+      "recommendations_count": 5,
+      "confidence": 0.6,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "sector_analysis_001",
+      "name": "行业分析-科技板块",
+      "category": "行业分析",
+      "priority": "medium",
+      "query": "帮我分析一下科技板块最近的表现，特别是人工智能相关的股票",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.0,
+      "result_summary": "基于当前信息提供基础分析，建议获取更多数据以提升分析精度",
+      "insights_count": 3,
+      "recommendations_count": 5,
+      "confidence": 0.5,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "sector_analysis_002",
+      "name": "行业分析-银行板块",
+      "category": "行业分析",
+      "priority": "medium",
+      "query": "银行板块整体表现如何？",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.0004949569702148438,
+      "result_summary": "基于当前信息提供基础分析，建议获取更多数据以提升分析精度",
+      "insights_count": 3,
+      "recommendations_count": 5,
+      "confidence": 0.5,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "technical_analysis_001",
+      "name": "技术分析-MACD RSI",
+      "category": "技术分析",
+      "priority": "medium",
+      "query": "000001的MACD和RSI指标显示什么信号？",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.0,
+      "result_summary": "基于当前信息提供基础分析，建议获取更多数据以提升分析精度",
+      "insights_count": 3,
+      "recommendations_count": 5,
+      "confidence": 0.5,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "technical_analysis_002",
+      "name": "技术分析-KDJ",
+      "category": "技术分析",
+      "priority": "low",
+      "query": "600519的KDJ指标怎么样？",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.000522613525390625,
+      "result_summary": "股票分析需要明确的标的代码，建议提供具体股票代码",
+      "insights_count": 3,
+      "recommendations_count": 1,
+      "confidence": 0.7999999999999999,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "macro_analysis_001",
+      "name": "宏观分析-GDP影响",
+      "category": "宏观分析",
+      "priority": "low",
+      "query": "最新的GDP数据对股市有什么影响？",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.0,
+      "result_summary": "基于当前信息提供基础分析，建议获取更多数据以提升分析精度",
+      "insights_count": 3,
+      "recommendations_count": 5,
+      "confidence": 0.5,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "macro_analysis_002",
+      "name": "宏观分析-利率影响",
+      "category": "宏观分析",
+      "priority": "low",
+      "query": "央行降息对银行股有什么影响？",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.0,
+      "result_summary": "基于当前信息提供基础分析，建议获取更多数据以提升分析精度",
+      "insights_count": 3,
+      "recommendations_count": 5,
+      "confidence": 0.5,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "edge_case_001",
+      "name": "边界情况-空查询",
+      "category": "边界情况",
+      "priority": "high",
+      "query": "",
+      "success": true,
+      "score": 9.5,
+      "execution_time": 0.0,
+      "result_summary": "基于当前信息提供基础分析，建议获取更多数据以提升分析精度",
+      "insights_count": 3,
+      "recommendations_count": 5,
+      "confidence": 0.5,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "edge_case_002",
+      "name": "边界情况-无意义文本",
+      "category": "边界情况",
+      "priority": "high",
+      "query": "随机文本测试abcd1234",
+      "success": true,
+      "score": 9.5,
+      "execution_time": 0.0,
+      "result_summary": "基于当前信息提供基础分析，建议获取更多数据以提升分析精度",
+      "insights_count": 3,
+      "recommendations_count": 5,
+      "confidence": 0.5,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "edge_case_003",
+      "name": "边界情况-不存在股票代码",
+      "category": "边界情况",
+      "priority": "medium",
+      "query": "分析999999这只股票",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.0,
+      "result_summary": "股票分析需要明确的标的代码，建议提供具体股票代码",
+      "insights_count": 3,
+      "recommendations_count": 1,
+      "confidence": 0.7999999999999999,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "edge_case_004",
+      "name": "边界情况-超长查询",
+      "category": "边界情况",
+      "priority": "medium",
+      "query": "请帮我详细分析000001平安银行这只股票的各种情况包括基本面技术面资金面政策面行业面公司面财务面估值面风险面机会面等等各个方面的详细情况并给出专业的投资建议",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.0009226799011230469,
+      "result_summary": "股票分析需要明确的标的代码，建议提供具体股票代码",
+      "insights_count": 3,
+      "recommendations_count": 1,
+      "confidence": 0.7999999999999999,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "edge_case_005",
+      "name": "边界情况-特殊字符",
+      "category": "边界情况",
+      "priority": "low",
+      "query": "分析000001@#$%^&*()",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.00033354759216308594,
+      "result_summary": "股票分析需要明确的标的代码，建议提供具体股票代码",
+      "insights_count": 3,
+      "recommendations_count": 1,
+      "confidence": 0.7999999999999999,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "edge_case_006",
+      "name": "边界情况-英文查询",
+      "category": "边界情况",
+      "priority": "low",
+      "query": "Analyze stock 000001",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.0005152225494384766,
+      "result_summary": "基于当前信息提供基础分析，建议获取更多数据以提升分析精度",
+      "insights_count": 3,
+      "recommendations_count": 5,
+      "confidence": 0.6,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "complex_scenario_001",
+      "name": "复杂场景-多股票多指标",
+      "category": "复杂场景",
+      "priority": "high",
+      "query": "对比000001、600036、600000三只银行股的PE、PB、ROE，哪个更值得投资？",
+      "success": true,
+      "score": 9.166666666666666,
+      "execution_time": 0.11491131782531738,
+      "result_summary": "600036近期呈现上涨趋势，累计变动25.24%。基于技术分析，该股票表现强劲。",
+      "insights_count": 4,
+      "recommendations_count": 3,
+      "confidence": 0.8,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "complex_scenario_002",
+      "name": "复杂场景-时间序列分析",
+      "category": "复杂场景",
+      "priority": "medium",
+      "query": "分析000001从2023年到现在的表现，包括价格走势、成交量变化和财务指标变化",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.0005297660827636719,
+      "result_summary": "股票分析需要明确的标的代码，建议提供具体股票代码",
+      "insights_count": 3,
+      "recommendations_count": 1,
+      "confidence": 0.7999999999999999,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "complex_scenario_003",
+      "name": "复杂场景-行业轮动分析",
+      "category": "复杂场景",
+      "priority": "medium",
+      "query": "当前市场是否存在行业轮动？哪些板块值得关注？",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.0005276203155517578,
+      "result_summary": "基于当前信息提供基础分析，建议获取更多数据以提升分析精度",
+      "insights_count": 3,
+      "recommendations_count": 5,
+      "confidence": 0.5,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "realtime_001",
+      "name": "实时性-盘中分析",
+      "category": "实时性",
+      "priority": "high",
+      "query": "000001现在的实时价格和盘中表现如何？",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.0005235671997070312,
+      "result_summary": "股票分析需要明确的标的代码，建议提供具体股票代码",
+      "insights_count": 3,
+      "recommendations_count": 1,
+      "confidence": 0.7999999999999999,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "realtime_002",
+      "name": "实时性-市场热点",
+      "category": "实时性",
+      "priority": "medium",
+      "query": "今天市场有什么热点？涨幅榜前十是哪些股票？",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.0,
+      "result_summary": "基于当前信息提供基础分析，建议获取更多数据以提升分析精度",
+      "insights_count": 3,
+      "recommendations_count": 5,
+      "confidence": 0.5,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "user_experience_001",
+      "name": "用户体验-口语化查询",
+      "category": "用户体验",
+      "priority": "medium",
+      "query": "平安银行这股票咋样啊？能买不？",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.0,
+      "result_summary": "基于当前信息提供基础分析，建议获取更多数据以提升分析精度",
+      "insights_count": 3,
+      "recommendations_count": 5,
+      "confidence": 0.5,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "user_experience_002",
+      "name": "用户体验-模糊查询",
+      "category": "用户体验",
+      "priority": "medium",
+      "query": "那个做白酒的茅台股票怎么样？",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.0,
+      "result_summary": "基于当前信息提供基础分析，建议获取更多数据以提升分析精度",
+      "insights_count": 3,
+      "recommendations_count": 5,
+      "confidence": 0.5,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "user_experience_003",
+      "name": "用户体验-新手友好",
+      "category": "用户体验",
+      "priority": "high",
+      "query": "我是新手，想了解股票投资，有什么建议吗？",
+      "success": true,
+      "score": 7.833333333333333,
+      "execution_time": 0.0,
+      "result_summary": "投资建议：基于风险收益平衡原则，提供个性化投资策略",
+      "insights_count": 4,
+      "recommendations_count": 5,
+      "confidence": 0.6,
+      "risk_level": "风险等级待评估"
+    },
+    {
+      "test_id": "performance_001",
+      "name": "性能测试-批量查询",
+      "category": "性能测试",
+      "priority": "medium",
+      "query": "分析000001、000002、600519、600036、000858这五只股票",
+      "success": true,
+      "score": 9.2,
+      "execution_time": 0.28616857528686523,
+      "result_summary": "000002近期呈现上涨趋势，累计变动25.24%。基于技术分析，该股票表现强劲。",
+      "insights_count": 12,
+      "recommendations_count": 3,
+      "confidence": 0.8,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "accuracy_001",
+      "name": "准确性测试-具体数值",
+      "category": "准确性测试",
+      "priority": "high",
+      "query": "000001的PE是多少？PB是多少？",
+      "success": true,
+      "score": 9.166666666666666,
+      "execution_time": 0.0,
+      "result_summary": "财务指标分析：重点关注估值指标和盈利能力指标",
+      "insights_count": 4,
+      "recommendations_count": 2,
+      "confidence": 0.6,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "accuracy_002",
+      "name": "准确性测试-历史数据",
+      "category": "准确性测试",
+      "priority": "medium",
+      "query": "000001去年同期的价格是多少？",
+      "success": true,
+      "score": 8.5,
+      "execution_time": 0.00028252601623535156,
+      "result_summary": "基于当前信息提供基础分析，建议获取更多数据以提升分析精度",
+      "insights_count": 3,
+      "recommendations_count": 5,
+      "confidence": 0.6,
+      "risk_level": "中等风险"
+    },
+    {
+      "test_id": "llm_tool_calling_001",
+      "name": "LLM工具调用-实时股价",
+      "test_type": "tool_calling",
+      "success": true,
+      "summary": "工具调用验证通过 - 满足5个指标",
+      "details": {
+        "indicators": [
+          "有数据点",
+          "有分析洞察",
+          "有投资建议",
+          "置信度较高",
+          "有详细摘要"
+        ]
+      }
+    },
+    {
+      "test_id": "llm_tool_calling_002",
+      "name": "LLM工具调用-历史数据",
+      "test_type": "tool_calling",
+      "success": true,
+      "summary": "工具调用验证通过 - 满足5个指标",
+      "details": {
+        "indicators": [
+          "有数据点",
+          "有分析洞察",
+          "有投资建议",
+          "置信度较高",
+          "有详细摘要"
+        ]
+      }
+    },
+    {
+      "test_id": "llm_data_analysis_001",
+      "name": "LLM数据分析-价格趋势",
+      "test_type": "data_analysis",
+      "success": true,
+      "summary": "数据分析验证通过 - 2个质量指标",
+      "details": {
+        "quality_indicators": [
+          "洞察数量充足",
+          "有数据支撑"
+        ]
+      }
+    },
+    {
+      "test_id": "llm_data_analysis_002",
+      "name": "LLM数据分析-财务指标",
+      "test_type": "data_analysis",
+      "success": true,
+      "summary": "数据分析验证通过 - 2个质量指标",
+      "details": {
+        "quality_indicators": [
+          "洞察数量充足",
+          "有数据支撑"
+        ]
+      }
+    },
+    {
+      "test_id": "llm_reasoning_001",
+      "name": "LLM推理-投资建议",
+      "test_type": "reasoning",
+      "success": true,
+      "summary": "推理验证通过",
+      "details": {}
+    },
+    {
+      "test_id": "llm_reasoning_002",
+      "name": "LLM推理-风险评估",
+      "test_type": "reasoning",
+      "success": true,
+      "summary": "推理验证通过",
+      "details": {}
+    },
+    {
+      "test_id": "llm_error_handling_001",
+      "name": "LLM错误处理-无效股票代码",
+      "test_type": "error_handling",
+      "success": true,
+      "summary": "错误处理验证通过",
+      "details": {}
+    },
+    {
+      "test_id": "llm_error_handling_002",
+      "name": "LLM错误处理-数据获取失败",
+      "test_type": "error_handling",
+      "success": true,
+      "summary": "错误处理验证通过",
+      "details": {}
+    },
+    {
+      "test_id": "llm_context_understanding_001",
+      "name": "LLM上下文理解-多轮对话",
+      "test_type": "context_understanding",
+      "success": true,
+      "summary": "基础验证通过",
+      "details": {}
+    },
+    {
+      "test_id": "llm_context_understanding_002",
+      "name": "LLM上下文理解-隐含信息",
+      "test_type": "context_understanding",
+      "success": true,
+      "summary": "基础验证通过",
+      "details": {}
+    },
+    {
+      "test_id": "llm_creativity_001",
+      "name": "LLM创造性-投资策略",
+      "test_type": "creativity",
+      "success": true,
+      "summary": "基础验证通过",
+      "details": {}
+    },
+    {
+      "test_id": "llm_consistency_001",
+      "name": "LLM一致性-重复查询",
+      "test_type": "consistency",
+      "success": true,
+      "summary": "基础验证通过",
+      "details": {}
+    },
+    {
+      "test_id": "dynamic_1",
+      "query": "000166的PE怎么样",
+      "success": true,
+      "score": 10.0,
+      "type": "dynamic"
+    },
+    {
+      "test_id": "dynamic_2",
+      "query": "买入000858合适吗",
+      "success": true,
+      "score": 10.0,
+      "type": "dynamic"
+    },
+    {
+      "test_id": "dynamic_3",
+      "query": "查看000002的情况",
+      "success": true,
+      "score": 10.0,
+      "type": "dynamic"
+    },
+    {
+      "test_id": "dynamic_4",
+      "query": "002594风险大吗",
+      "success": true,
+      "score": 10.0,
+      "type": "dynamic"
+    },
+    {
+      "test_id": "dynamic_5",
+      "query": "300750怎么样",
+      "success": true,
+      "score": 10.0,
+      "type": "dynamic"
+    },
+    {
+      "test_id": "dynamic_6",
+      "query": "000166怎么样",
+      "success": true,
+      "score": 10.0,
+      "type": "dynamic"
+    },
+    {
+      "test_id": "dynamic_7",
+      "query": "002594风险大吗",
+      "success": true,
+      "score": 10.0,
+      "type": "dynamic"
+    },
+    {
+      "test_id": "dynamic_8",
+      "query": "买入002594合适吗",
+      "success": true,
+      "score": 10.0,
+      "type": "dynamic"
+    },
+    {
+      "test_id": "dynamic_9",
+      "query": "000002风险大吗",
+      "success": true,
+      "score": 10.0,
+      "type": "dynamic"
+    },
+    {
+      "test_id": "dynamic_10",
+      "query": "002594的PE怎么样",
+      "success": true,
+      "score": 10.0,
+      "type": "dynamic"
+    }
+  ],
+  "configuration": {
+    "test_cases": [
+      {
+        "id": "stock_analysis_basic_001",
+        "name": "基础股票分析-平安银行",
+        "prompt": "分析000001平安银行最近的表现",
+        "expected_intent": "stock_analysis",
+        "expected_entities": [
+          "000001",
+          "平安银行"
+        ],
+        "expected_interfaces": [
+          "stock_zh_a_hist",
+          "stock_zh_a_spot_em"
+        ],
+        "description": "测试基本的股票分析功能",
+        "priority": "high",
+        "category": "股票分析"
+      },
+      {
+        "id": "stock_analysis_basic_002",
+        "name": "基础股票分析-贵州茅台",
+        "prompt": "600519贵州茅台怎么样？",
+        "expected_intent": "stock_analysis",
+        "expected_entities": [
+          "600519",
+          "贵州茅台"
+        ],
+        "expected_interfaces": [
+          "stock_zh_a_hist",
+          "stock_zh_a_spot_em"
+        ],
+        "description": "测试高价股分析",
+        "priority": "high",
+        "category": "股票分析"
+      },
+      {
+        "id": "stock_analysis_basic_003",
+        "name": "基础股票分析-简短查询",
+        "prompt": "000002怎么样",
+        "expected_intent": "stock_analysis",
+        "expected_entities": [
+          "000002"
+        ],
+        "expected_interfaces": [
+          "stock_zh_a_hist",
+          "stock_zh_a_spot_em"
+        ],
+        "description": "测试简短查询的股票分析",
+        "priority": "medium",
+        "category": "股票分析"
+      },
+      {
+        "id": "stock_analysis_investment_001",
+        "name": "投资价值分析",
+        "prompt": "000001值得投资吗？风险大不大？",
+        "expected_intent": "stock_analysis",
+        "expected_entities": [
+          "000001",
+          "投资",
+          "风险"
+        ],
+        "expected_interfaces": [
+          "stock_zh_a_hist",
+          "stock_financial_analysis_indicator"
+        ],
+        "description": "测试投资价值和风险评估",
+        "priority": "high",
+        "category": "股票分析"
+      },
+      {
+        "id": "stock_analysis_performance_001",
+        "name": "股票表现分析",
+        "prompt": "查看000858五粮液最近一个月的表现",
+        "expected_intent": "stock_analysis",
+        "expected_entities": [
+          "000858",
+          "五粮液",
+          "一个月"
+        ],
+        "expected_interfaces": [
+          "stock_zh_a_hist"
+        ],
+        "description": "测试特定时间段的股票表现分析",
+        "priority": "medium",
+        "category": "股票分析"
+      },
+      {
+        "id": "market_overview_001",
+        "name": "市场概览-今日",
+        "prompt": "今日A股市场整体表现如何？",
+        "expected_intent": "market_overview",
+        "expected_entities": [
+          "A股",
+          "今日"
+        ],
+        "expected_interfaces": [
+          "stock_zh_a_spot_em",
+          "index_zh_a_hist"
+        ],
+        "description": "测试当日市场整体分析功能",
+        "priority": "high",
+        "category": "市场概览"
+      },
+      {
+        "id": "market_overview_002",
+        "name": "市场概览-大盘",
+        "prompt": "大盘情况怎么样？",
+        "expected_intent": "market_overview",
+        "expected_entities": [
+          "大盘"
+        ],
+        "expected_interfaces": [
+          "index_zh_a_hist",
+          "stock_zh_a_spot_em"
+        ],
+        "description": "测试大盘走势分析",
+        "priority": "high",
+        "category": "市场概览"
+      },
+      {
+        "id": "market_overview_003",
+        "name": "市场概览-整体走势",
+        "prompt": "整体市场走势如何？有什么投资机会？",
+        "expected_intent": "market_overview",
+        "expected_entities": [
+          "市场",
+          "走势",
+          "投资机会"
+        ],
+        "expected_interfaces": [
+          "stock_zh_a_spot_em",
+          "index_zh_a_hist"
+        ],
+        "description": "测试市场走势和机会分析",
+        "priority": "medium",
+        "category": "市场概览"
+      },
+      {
+        "id": "financial_metrics_001",
+        "name": "财务指标分析-PE ROE",
+        "prompt": "000001的PE、PB、ROE等财务指标怎么样？",
+        "expected_intent": "financial_metrics",
+        "expected_entities": [
+          "000001",
+          "PE",
+          "PB",
+          "ROE"
+        ],
+        "expected_interfaces": [
+          "stock_financial_analysis_indicator"
+        ],
+        "description": "测试多个财务指标分析功能",
+        "priority": "high",
+        "category": "财务指标"
+      },
+      {
+        "id": "financial_metrics_002",
+        "name": "财务指标分析-市盈率",
+        "prompt": "600519的市盈率高不高？",
+        "expected_intent": "financial_metrics",
+        "expected_entities": [
+          "600519",
+          "市盈率"
+        ],
+        "expected_interfaces": [
+          "stock_financial_analysis_indicator"
+        ],
+        "description": "测试单一财务指标分析",
+        "priority": "medium",
+        "category": "财务指标"
+      },
+      {
+        "id": "financial_metrics_003",
+        "name": "财务指标分析-ROE",
+        "prompt": "000002万科A的ROE怎么样？",
+        "expected_intent": "financial_metrics",
+        "expected_entities": [
+          "000002",
+          "万科A",
+          "ROE"
+        ],
+        "expected_interfaces": [
+          "stock_financial_analysis_indicator"
+        ],
+        "description": "测试ROE指标分析",
+        "priority": "medium",
+        "category": "财务指标"
+      },
+      {
+        "id": "comparison_analysis_001",
+        "name": "对比分析-两只股票",
+        "prompt": "000001和600519哪个投资价值更高？",
+        "expected_intent": "comparison_analysis",
+        "expected_entities": [
+          "000001",
+          "600519"
+        ],
+        "expected_interfaces": [
+          "stock_zh_a_hist",
+          "stock_financial_analysis_indicator"
+        ],
+        "description": "测试两只股票对比分析功能",
+        "priority": "high",
+        "category": "对比分析"
+      },
+      {
+        "id": "comparison_analysis_002",
+        "name": "对比分析-银行股",
+        "prompt": "帮我对比分析000001平安银行和600036招商银行",
+        "expected_intent": "comparison_analysis",
+        "expected_entities": [
+          "000001",
+          "平安银行",
+          "600036",
+          "招商银行"
+        ],
+        "expected_interfaces": [
+          "stock_zh_a_hist",
+          "stock_financial_analysis_indicator"
+        ],
+        "description": "测试同行业股票对比",
+        "priority": "high",
+        "category": "对比分析"
+      },
+      {
+        "id": "comparison_analysis_003",
+        "name": "对比分析-白酒股",
+        "prompt": "600519和000858哪个更值得长期持有？",
+        "expected_intent": "comparison_analysis",
+        "expected_entities": [
+          "600519",
+          "000858",
+          "长期持有"
+        ],
+        "expected_interfaces": [
+          "stock_zh_a_hist",
+          "stock_financial_analysis_indicator"
+        ],
+        "description": "测试白酒股对比分析",
+        "priority": "medium",
+        "category": "对比分析"
+      },
+      {
+        "id": "trend_analysis_001",
+        "name": "趋势分析-未来走势",
+        "prompt": "000001未来走势预测",
+        "expected_intent": "trend_analysis",
+        "expected_entities": [
+          "000001",
+          "未来走势"
+        ],
+        "expected_interfaces": [
+          "stock_zh_a_hist"
+        ],
+        "description": "测试趋势分析和预测功能",
+        "priority": "medium",
+        "category": "趋势分析"
+      },
+      {
+        "id": "trend_analysis_002",
+        "name": "趋势分析-技术走势",
+        "prompt": "600519的技术走势如何？",
+        "expected_intent": "trend_analysis",
+        "expected_entities": [
+          "600519",
+          "技术走势"
+        ],
+        "expected_interfaces": [
+          "stock_zh_a_hist"
+        ],
+        "description": "测试技术走势分析",
+        "priority": "medium",
+        "category": "趋势分析"
+      },
+      {
+        "id": "investment_advice_001",
+        "name": "投资建议-推荐股票",
+        "prompt": "推荐一些值得投资的股票",
+        "expected_intent": "investment_advice",
+        "expected_entities": [
+          "推荐",
+          "投资"
+        ],
+        "expected_interfaces": [
+          "stock_zh_a_spot_em"
+        ],
+        "description": "测试投资建议生成功能",
+        "priority": "high",
+        "category": "投资建议"
+      },
+      {
+        "id": "investment_advice_002",
+        "name": "投资建议-买入时机",
+        "prompt": "现在是买入000001的好时机吗？",
+        "expected_intent": "investment_advice",
+        "expected_entities": [
+          "000001",
+          "买入",
+          "时机"
+        ],
+        "expected_interfaces": [
+          "stock_zh_a_hist",
+          "stock_zh_a_spot_em"
+        ],
+        "description": "测试买入时机建议",
+        "priority": "high",
+        "category": "投资建议"
+      },
+      {
+        "id": "risk_assessment_001",
+        "name": "风险评估-投资风险",
+        "prompt": "000001的投资风险如何？",
+        "expected_intent": "risk_assessment",
+        "expected_entities": [
+          "000001",
+          "投资风险"
+        ],
+        "expected_interfaces": [
+          "stock_zh_a_hist",
+          "stock_financial_analysis_indicator"
+        ],
+        "description": "测试风险评估功能",
+        "priority": "high",
+        "category": "风险评估"
+      },
+      {
+        "id": "risk_assessment_002",
+        "name": "风险评估-安全性",
+        "prompt": "600519投资安全吗？风险大不大？",
+        "expected_intent": "risk_assessment",
+        "expected_entities": [
+          "600519",
+          "安全",
+          "风险"
+        ],
+        "expected_interfaces": [
+          "stock_zh_a_hist",
+          "stock_financial_analysis_indicator"
+        ],
+        "description": "测试投资安全性评估",
+        "priority": "medium",
+        "category": "风险评估"
+      },
+      {
+        "id": "sector_analysis_001",
+        "name": "行业分析-科技板块",
+        "prompt": "帮我分析一下科技板块最近的表现，特别是人工智能相关的股票",
+        "expected_intent": "sector_analysis",
+        "expected_entities": [
+          "科技板块",
+          "人工智能"
+        ],
+        "expected_interfaces": [
+          "stock_board_concept_name_em",
+          "stock_zh_a_spot_em"
+        ],
+        "description": "测试复杂的行业和概念分析",
+        "priority": "medium",
+        "category": "行业分析"
+      },
+      {
+        "id": "sector_analysis_002",
+        "name": "行业分析-银行板块",
+        "prompt": "银行板块整体表现如何？",
+        "expected_intent": "sector_analysis",
+        "expected_entities": [
+          "银行板块"
+        ],
+        "expected_interfaces": [
+          "stock_board_industry_name_em",
+          "stock_zh_a_spot_em"
+        ],
+        "description": "测试银行行业分析",
+        "priority": "medium",
+        "category": "行业分析"
+      },
+      {
+        "id": "technical_analysis_001",
+        "name": "技术分析-MACD RSI",
+        "prompt": "000001的MACD和RSI指标显示什么信号？",
+        "expected_intent": "technical_analysis",
+        "expected_entities": [
+          "000001",
+          "MACD",
+          "RSI"
+        ],
+        "expected_interfaces": [
+          "stock_zh_a_hist"
+        ],
+        "description": "测试技术指标分析功能",
+        "priority": "medium",
+        "category": "技术分析"
+      },
+      {
+        "id": "technical_analysis_002",
+        "name": "技术分析-KDJ",
+        "prompt": "600519的KDJ指标怎么样？",
+        "expected_intent": "technical_analysis",
+        "expected_entities": [
+          "600519",
+          "KDJ"
+        ],
+        "expected_interfaces": [
+          "stock_zh_a_hist"
+        ],
+        "description": "测试KDJ技术指标",
+        "priority": "low",
+        "category": "技术分析"
+      },
+      {
+        "id": "macro_analysis_001",
+        "name": "宏观分析-GDP影响",
+        "prompt": "最新的GDP数据对股市有什么影响？",
+        "expected_intent": "macro_analysis",
+        "expected_entities": [
+          "GDP",
+          "股市"
+        ],
+        "expected_interfaces": [
+          "macro_china_gdp",
+          "index_zh_a_hist"
+        ],
+        "description": "测试宏观经济分析功能",
+        "priority": "low",
+        "category": "宏观分析"
+      },
+      {
+        "id": "macro_analysis_002",
+        "name": "宏观分析-利率影响",
+        "prompt": "央行降息对银行股有什么影响？",
+        "expected_intent": "macro_analysis",
+        "expected_entities": [
+          "央行",
+          "降息",
+          "银行股"
+        ],
+        "expected_interfaces": [
+          "stock_board_industry_name_em"
+        ],
+        "description": "测试货币政策对行业影响分析",
+        "priority": "low",
+        "category": "宏观分析"
+      },
+      {
+        "id": "edge_case_001",
+        "name": "边界情况-空查询",
+        "prompt": "",
+        "expected_intent": "unknown",
+        "expected_entities": [],
+        "expected_interfaces": [],
+        "description": "测试空查询的处理",
+        "priority": "high",
+        "category": "边界情况"
+      },
+      {
+        "id": "edge_case_002",
+        "name": "边界情况-无意义文本",
+        "prompt": "随机文本测试abcd1234",
+        "expected_intent": "unknown",
+        "expected_entities": [],
+        "expected_interfaces": [],
+        "description": "测试无意义文本的处理",
+        "priority": "high",
+        "category": "边界情况"
+      },
+      {
+        "id": "edge_case_003",
+        "name": "边界情况-不存在股票代码",
+        "prompt": "分析999999这只股票",
+        "expected_intent": "stock_analysis",
+        "expected_entities": [
+          "999999"
+        ],
+        "expected_interfaces": [
+          "stock_zh_a_hist"
+        ],
+        "description": "测试不存在股票代码的处理",
+        "priority": "medium",
+        "category": "边界情况"
+      },
+      {
+        "id": "edge_case_004",
+        "name": "边界情况-超长查询",
+        "prompt": "请帮我详细分析000001平安银行这只股票的各种情况包括基本面技术面资金面政策面行业面公司面财务面估值面风险面机会面等等各个方面的详细情况并给出专业的投资建议",
+        "expected_intent": "stock_analysis",
+        "expected_entities": [
+          "000001",
+          "平安银行"
+        ],
+        "expected_interfaces": [
+          "stock_zh_a_hist",
+          "stock_financial_analysis_indicator"
+        ],
+        "description": "测试超长查询的处理",
+        "priority": "medium",
+        "category": "边界情况"
+      },
+      {
+        "id": "edge_case_005",
+        "name": "边界情况-特殊字符",
+        "prompt": "分析000001@#$%^&*()",
+        "expected_intent": "stock_analysis",
+        "expected_entities": [
+          "000001"
+        ],
+        "expected_interfaces": [
+          "stock_zh_a_hist"
+        ],
+        "description": "测试包含特殊字符的查询",
+        "priority": "low",
+        "category": "边界情况"
+      },
+      {
+        "id": "edge_case_006",
+        "name": "边界情况-英文查询",
+        "prompt": "Analyze stock 000001",
+        "expected_intent": "stock_analysis",
+        "expected_entities": [
+          "000001"
+        ],
+        "expected_interfaces": [
+          "stock_zh_a_hist"
+        ],
+        "description": "测试英文查询的处理",
+        "priority": "low",
+        "category": "边界情况"
+      },
+      {
+        "id": "complex_scenario_001",
+        "name": "复杂场景-多股票多指标",
+        "prompt": "对比000001、600036、600000三只银行股的PE、PB、ROE，哪个更值得投资？",
+        "expected_intent": "comparison_analysis",
+        "expected_entities": [
+          "000001",
+          "600036",
+          "600000",
+          "PE",
+          "PB",
+          "ROE"
+        ],
+        "expected_interfaces": [
+          "stock_financial_analysis_indicator",
+          "stock_zh_a_hist"
+        ],
+        "description": "测试多股票多指标复杂对比",
+        "priority": "high",
+        "category": "复杂场景"
+      },
+      {
+        "id": "complex_scenario_002",
+        "name": "复杂场景-时间序列分析",
+        "prompt": "分析000001从2023年到现在的表现，包括价格走势、成交量变化和财务指标变化",
+        "expected_intent": "trend_analysis",
+        "expected_entities": [
+          "000001",
+          "2023年",
+          "价格走势",
+          "成交量",
+          "财务指标"
+        ],
+        "expected_interfaces": [
+          "stock_zh_a_hist",
+          "stock_financial_analysis_indicator"
+        ],
+        "description": "测试时间序列综合分析",
+        "priority": "medium",
+        "category": "复杂场景"
+      },
+      {
+        "id": "complex_scenario_003",
+        "name": "复杂场景-行业轮动分析",
+        "prompt": "当前市场是否存在行业轮动？哪些板块值得关注？",
+        "expected_intent": "sector_analysis",
+        "expected_entities": [
+          "行业轮动",
+          "板块"
+        ],
+        "expected_interfaces": [
+          "stock_board_industry_name_em",
+          "stock_zh_a_spot_em"
+        ],
+        "description": "测试行业轮动和板块分析",
+        "priority": "medium",
+        "category": "复杂场景"
+      },
+      {
+        "id": "realtime_001",
+        "name": "实时性-盘中分析",
+        "prompt": "000001现在的实时价格和盘中表现如何？",
+        "expected_intent": "stock_analysis",
+        "expected_entities": [
+          "000001",
+          "实时价格",
+          "盘中"
+        ],
+        "expected_interfaces": [
+          "stock_zh_a_spot_em"
+        ],
+        "description": "测试实时数据分析",
+        "priority": "high",
+        "category": "实时性"
+      },
+      {
+        "id": "realtime_002",
+        "name": "实时性-市场热点",
+        "prompt": "今天市场有什么热点？涨幅榜前十是哪些股票？",
+        "expected_intent": "market_overview",
+        "expected_entities": [
+          "热点",
+          "涨幅榜"
+        ],
+        "expected_interfaces": [
+          "stock_zh_a_spot_em"
+        ],
+        "description": "测试市场热点实时分析",
+        "priority": "medium",
+        "category": "实时性"
+      },
+      {
+        "id": "user_experience_001",
+        "name": "用户体验-口语化查询",
+        "prompt": "平安银行这股票咋样啊？能买不？",
+        "expected_intent": "stock_analysis",
+        "expected_entities": [
+          "平安银行"
+        ],
+        "expected_interfaces": [
+          "stock_zh_a_hist",
+          "stock_zh_a_spot_em"
+        ],
+        "description": "测试口语化查询的理解",
+        "priority": "medium",
+        "category": "用户体验"
+      },
+      {
+        "id": "user_experience_002",
+        "name": "用户体验-模糊查询",
+        "prompt": "那个做白酒的茅台股票怎么样？",
+        "expected_intent": "stock_analysis",
+        "expected_entities": [
+          "白酒",
+          "茅台"
+        ],
+        "expected_interfaces": [
+          "stock_zh_a_hist"
+        ],
+        "description": "测试模糊描述的股票查询",
+        "priority": "medium",
+        "category": "用户体验"
+      },
+      {
+        "id": "user_experience_003",
+        "name": "用户体验-新手友好",
+        "prompt": "我是新手，想了解股票投资，有什么建议吗？",
+        "expected_intent": "investment_advice",
+        "expected_entities": [
+          "新手",
+          "股票投资",
+          "建议"
+        ],
+        "expected_interfaces": [],
+        "description": "测试新手用户的友好体验",
+        "priority": "high",
+        "category": "用户体验"
+      },
+      {
+        "id": "performance_001",
+        "name": "性能测试-批量查询",
+        "prompt": "分析000001、000002、600519、600036、000858这五只股票",
+        "expected_intent": "comparison_analysis",
+        "expected_entities": [
+          "000001",
+          "000002",
+          "600519",
+          "600036",
+          "000858"
+        ],
+        "expected_interfaces": [
+          "stock_zh_a_hist",
+          "stock_zh_a_spot_em"
+        ],
+        "description": "测试批量股票查询性能",
+        "priority": "medium",
+        "category": "性能测试"
+      },
+      {
+        "id": "accuracy_001",
+        "name": "准确性测试-具体数值",
+        "prompt": "000001的PE是多少？PB是多少？",
+        "expected_intent": "financial_metrics",
+        "expected_entities": [
+          "000001",
+          "PE",
+          "PB"
+        ],
+        "expected_interfaces": [
+          "stock_financial_analysis_indicator"
+        ],
+        "description": "测试具体数值查询的准确性",
+        "priority": "high",
+        "category": "准确性测试"
+      },
+      {
+        "id": "accuracy_002",
+        "name": "准确性测试-历史数据",
+        "prompt": "000001去年同期的价格是多少？",
+        "expected_intent": "stock_analysis",
+        "expected_entities": [
+          "000001",
+          "去年同期",
+          "价格"
+        ],
+        "expected_interfaces": [
+          "stock_zh_a_hist"
+        ],
+        "description": "测试历史数据查询准确性",
+        "priority": "medium",
+        "category": "准确性测试"
+      }
+    ],
+    "test_configuration": {
+      "api_base_url": "http://localhost:8000",
+      "endpoints": {
+        "llm_chat": "/api/llm/chat",
+        "llm_analyze": "/api/llm/analyze",
+        "llm_capabilities": "/api/llm/capabilities",
+        "health": "/health",
+        "docs": "/docs",
+        "token": "/api/token"
+      },
+      "authentication": {
+        "required": true,
+        "test_user": "test_user",
+        "test_password": "test_password",
+        "token_endpoint": "/api/token"
+      },
+      "timeout_seconds": 30,
+      "retry_attempts": 3,
+      "parallel_execution": false,
+      "delay_between_tests": 0.5,
+      "save_detailed_logs": true,
+      "generate_html_report": true
+    },
+    "validation_criteria": {
+      "response_time_max_seconds": 15,
+      "min_response_length": 50,
+      "required_fields": [
+        "summary",
+        "insights",
+        "recommendations",
+        "confidence",
+        "risk_level"
+      ],
+      "risk_levels": [
+        "低风险",
+        "中等风险",
+        "高风险",
+        "未知"
+      ],
+      "confidence_range": [
+        0.0,
+        1.0
+      ],
+      "min_insights_count": 1,
+      "min_recommendations_count": 1,
+      "max_summary_length": 500,
+      "quality_thresholds": {
+        "excellent": 9.0,
+        "good": 7.0,
+        "acceptable": 5.0,
+        "poor": 3.0
+      },
+      "performance_benchmarks": {
+        "llm_mode": {
+          "avg_response_time": 10.0,
+          "max_response_time": 30.0,
+          "min_confidence": 0.7,
+          "success_rate": 0.95
+        },
+        "rule_mode": {
+          "avg_response_time": 2.0,
+          "max_response_time": 5.0,
+          "min_confidence": 0.6,
+          "success_rate": 0.9
+        }
+      }
+    },
+    "llm_specific_tests": [
+      {
+        "id": "llm_tool_calling_001",
+        "name": "LLM工具调用-实时股价",
+        "prompt": "获取000001的最新股价",
+        "expected_behavior": "应该调用stock_zh_a_spot_em接口",
+        "validation": "检查是否正确调用了AkShare接口",
+        "test_type": "tool_calling",
+        "priority": "high"
+      },
+      {
+        "id": "llm_tool_calling_002",
+        "name": "LLM工具调用-历史数据",
+        "prompt": "获取600519最近30天的历史数据",
+        "expected_behavior": "应该调用stock_zh_a_hist接口",
+        "validation": "检查是否获取了正确的历史数据",
+        "test_type": "tool_calling",
+        "priority": "high"
+      },
+      {
+        "id": "llm_data_analysis_001",
+        "name": "LLM数据分析-价格趋势",
+        "prompt": "分析000001过去一个月的价格趋势",
+        "expected_behavior": "应该获取历史数据并进行趋势分析",
+        "validation": "检查是否包含具体的数据分析结果",
+        "test_type": "data_analysis",
+        "priority": "high"
+      },
+      {
+        "id": "llm_data_analysis_002",
+        "name": "LLM数据分析-财务指标",
+        "prompt": "分析000001的财务健康状况",
+        "expected_behavior": "应该获取财务数据并进行分析",
+        "validation": "检查是否包含PE、PB、ROE等关键指标",
+        "test_type": "data_analysis",
+        "priority": "medium"
+      },
+      {
+        "id": "llm_reasoning_001",
+        "name": "LLM推理-投资建议",
+        "prompt": "基于000001的基本面和技术面，给出投资建议",
+        "expected_behavior": "应该综合多方面信息给出合理建议",
+        "validation": "检查建议的逻辑性和合理性",
+        "test_type": "reasoning",
+        "priority": "high"
+      },
+      {
+        "id": "llm_reasoning_002",
+        "name": "LLM推理-风险评估",
+        "prompt": "评估投资000001的主要风险",
+        "expected_behavior": "应该识别并分析各种投资风险",
+        "validation": "检查风险识别的全面性和准确性",
+        "test_type": "reasoning",
+        "priority": "medium"
+      },
+      {
+        "id": "llm_error_handling_001",
+        "name": "LLM错误处理-无效股票代码",
+        "prompt": "分析一个不存在的股票代码999999",
+        "expected_behavior": "应该优雅地处理错误并给出提示",
+        "validation": "检查错误处理是否得当",
+        "test_type": "error_handling",
+        "priority": "high"
+      },
+      {
+        "id": "llm_error_handling_002",
+        "name": "LLM错误处理-数据获取失败",
+        "prompt": "分析000001但模拟数据获取失败",
+        "expected_behavior": "应该处理数据获取失败的情况",
+        "validation": "检查是否有合适的降级策略",
+        "test_type": "error_handling",
+        "priority": "medium"
+      },
+      {
+        "id": "llm_context_understanding_001",
+        "name": "LLM上下文理解-多轮对话",
+        "prompt": "先问'分析000001'，然后问'它的PE怎么样？'",
+        "expected_behavior": "应该理解'它'指的是000001",
+        "validation": "检查上下文理解能力",
+        "test_type": "context_understanding",
+        "priority": "medium"
+      },
+      {
+        "id": "llm_context_understanding_002",
+        "name": "LLM上下文理解-隐含信息",
+        "prompt": "银行股中哪个最值得投资？",
+        "expected_behavior": "应该理解需要分析银行板块股票",
+        "validation": "检查对隐含信息的理解",
+        "test_type": "context_understanding",
+        "priority": "medium"
+      },
+      {
+        "id": "llm_creativity_001",
+        "name": "LLM创造性-投资策略",
+        "prompt": "为风险偏好较低的投资者设计一个投资组合",
+        "expected_behavior": "应该创造性地设计合适的投资组合",
+        "validation": "检查策略的创新性和合理性",
+        "test_type": "creativity",
+        "priority": "low"
+      },
+      {
+        "id": "llm_consistency_001",
+        "name": "LLM一致性-重复查询",
+        "prompt": "分析000001的投资价值",
+        "expected_behavior": "多次查询应该给出一致的结果",
+        "validation": "检查结果的一致性",
+        "test_type": "consistency",
+        "priority": "medium"
+      }
+    ],
+    "performance_benchmarks": {
+      "rule_based_mode": {
+        "expected_response_time_seconds": 2,
+        "expected_accuracy": 0.8
+      },
+      "llm_mode": {
+        "expected_response_time_seconds": 10,
+        "expected_accuracy": 0.9
+      }
+    },
+    "test_data": {
+      "sample_stock_codes": [
+        "000001",
+        "000002",
+        "000858",
+        "600036",
+        "600519",
+        "600887",
+        "000166",
+        "002415",
+        "300059",
+        "688981",
+        "300750",
+        "002594"
+      ],
+      "stock_names": {
+        "000001": "平安银行",
+        "000002": "万科A",
+        "000858": "五粮液",
+        "600036": "招商银行",
+        "600519": "贵州茅台",
+        "600887": "伊利股份",
+        "000166": "申万宏源",
+        "002415": "海康威视",
+        "300059": "东方财富",
+        "688981": "中芯国际",
+        "300750": "宁德时代",
+        "002594": "比亚迪"
+      },
+      "sample_queries": [
+        "分析{stock_code}",
+        "{stock_code}怎么样",
+        "查看{stock_code}的情况",
+        "{stock_code}值得投资吗",
+        "{stock_code}的PE怎么样",
+        "{stock_code}风险大吗",
+        "买入{stock_code}合适吗",
+        "{stock_code}未来走势如何"
+      ],
+      "market_queries": [
+        "市场概况如何",
+        "今日大盘情况",
+        "整体市场表现",
+        "A股走势怎么样",
+        "市场有什么机会",
+        "现在适合投资吗",
+        "哪些板块表现好"
+      ],
+      "comparison_queries": [
+        "{stock_code1}和{stock_code2}哪个好",
+        "对比{stock_code1}和{stock_code2}",
+        "{stock_code1}vs{stock_code2}",
+        "银行股中哪个最好",
+        "白酒股对比分析"
+      ],
+      "complex_queries": [
+        "分析科技板块的投资机会",
+        "新能源汽车行业前景如何",
+        "医药股值得长期持有吗",
+        "消费股在当前环境下的表现",
+        "金融股的投资逻辑"
+      ],
+      "edge_case_queries": [
+        "",
+        "随机文本",
+        "abcd1234",
+        "分析999999",
+        "！@#￥%……&*（）",
+        "analyze stock 000001"
+      ]
+    },
+    "reporting": {
+      "output_formats": [
+        "json",
+        "html",
+        "csv"
+      ],
+      "include_charts": true,
+      "detailed_logs": true,
+      "performance_metrics": true,
+      "error_analysis": true,
+      "recommendations": true
+    }
+  }
+}

@@ -1,5 +1,43 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List, Dict, Any, Union
+from enum import Enum
+from dataclasses import dataclass
+from datetime import datetime
+
+class IntentType(Enum):
+    """意图类型枚举"""
+    STOCK_ANALYSIS = "stock_analysis"
+    MARKET_OVERVIEW = "market_overview"
+    FINANCIAL_METRICS = "financial_metrics"
+    TREND_ANALYSIS = "trend_analysis"
+    COMPARISON_ANALYSIS = "comparison_analysis"
+    INVESTMENT_ADVICE = "investment_advice"
+    RISK_ASSESSMENT = "risk_assessment"
+    SECTOR_ANALYSIS = "sector_analysis"
+    MACRO_ANALYSIS = "macro_analysis"
+    TECHNICAL_ANALYSIS = "technical_analysis"
+    UNKNOWN = "unknown"
+
+@dataclass
+class AnalysisContext:
+    """分析上下文"""
+    intent: IntentType
+    entities: Dict[str, Any]
+    confidence: float
+    raw_query: str
+    timestamp: Optional[datetime] = None
+
+@dataclass
+class AnalysisResult:
+    """分析结果"""
+    summary: str
+    insights: List[str]
+    recommendations: List[str]
+    data_points: Dict[str, Any]
+    charts_suggested: List[str]
+    risk_level: str
+    confidence: float
+    timestamp: Optional[datetime] = None
 
 # --- User Schemas ---
 class UserBase(BaseModel):
